@@ -1,7 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { db } from "@/lib/db";
+import { getProductBySlug, getRelatedProducts } from "@/lib/catalog-service";
 import { ProductDetailView } from "@/components/product/product-detail-view";
 import { ProductDTO } from "@/types";
 import { storeConfig } from "@/config/store";
@@ -14,10 +14,7 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = await db.product.findUnique({
-    where: { slug },
-    include: { category: true },
-  });
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     return {
@@ -26,8 +23,7 @@ export async function generateMetadata({
     };
   }
 
-  const images = JSON.parse(product.images) as string[];
-  const mainImage = images[0] || "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb";
+  const mainImage = product.images[0] || "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb";
 
   return {
     title: `${product.name} — купить в Худжанде по цене ${product.price} сомони`,
@@ -43,75 +39,17 @@ export async function generateMetadata({
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
 
-  const product = await db.product.findUnique({
-    where: { slug },
-    include: {
-      category: {
-        select: { id: true, name: true, slug: true },
-      },
-    },
-  });
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     notFound();
   }
 
   // Fetch related products (same category or brand)
-  const dbRelated = await db.product.findMany({
-    where: {
-      categoryId: product.categoryId,
-      id: { not: product.id },
-    },
-    take: 4,
-    include: {
-      category: { select: { id: true, name: true, slug: true } },
-    },
-  });
+  const parsedRelated = await getRelatedProducts(product.categoryId, product.id, 4);
 
-  const parsedProduct: ProductDTO = {
-    id: product.id,
-    slug: product.slug,
-    name: product.name,
-    description: product.description,
-    price: product.price,
-    oldPrice: product.oldPrice,
-    currency: product.currency,
-    images: JSON.parse(product.images) as string[],
-    categoryId: product.categoryId,
-    category: product.category,
-    brand: product.brand,
-    compatibleModels: JSON.parse(product.compatibleModels) as string[],
-    sku: product.sku,
-    stock: product.stock,
-    isNew: product.isNew,
-    isPopular: product.isPopular,
-    isSale: product.isSale,
-    color: product.color,
-    specifications: product.specifications
-      ? (JSON.parse(product.specifications) as Record<string, string>)
-      : null,
-  };
+  const parsedProduct = product;
 
-  const parsedRelated: ProductDTO[] = dbRelated.map((p) => ({
-    id: p.id,
-    slug: p.slug,
-    name: p.name,
-    description: p.description,
-    price: p.price,
-    oldPrice: p.oldPrice,
-    currency: p.currency,
-    images: JSON.parse(p.images) as string[],
-    categoryId: p.categoryId,
-    category: p.category,
-    brand: p.brand,
-    compatibleModels: JSON.parse(p.compatibleModels) as string[],
-    sku: p.sku,
-    stock: p.stock,
-    isNew: p.isNew,
-    isPopular: p.isPopular,
-    isSale: p.isSale,
-    color: p.color,
-  }));
 
   // JSON-LD Product Schema
   const productJsonLd = {

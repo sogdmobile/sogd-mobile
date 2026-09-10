@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import { db } from "@/lib/db";
+import { getProducts, getCategories } from "@/lib/catalog-service";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://sogdmobile.tj";
@@ -40,20 +40,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     const [products, categories] = await Promise.all([
-      db.product.findMany({ select: { slug: true, updatedAt: true } }),
-      db.category.findMany({ select: { slug: true, updatedAt: true } }),
+      getProducts(),
+      getCategories(),
     ]);
 
     const categoryRoutes: MetadataRoute.Sitemap = categories.map((c) => ({
       url: `${baseUrl}/catalog?category=${c.slug}`,
-      lastModified: c.updatedAt,
+      lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.8,
     }));
 
     const productRoutes: MetadataRoute.Sitemap = products.map((p) => ({
       url: `${baseUrl}/product/${p.slug}`,
-      lastModified: p.updatedAt,
+      lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.8,
     }));

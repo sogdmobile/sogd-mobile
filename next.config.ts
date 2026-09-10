@@ -13,7 +13,11 @@ const nextConfig: NextConfig = {
     ADMIN_SECRET_KEY: process.env.ADMIN_SECRET_KEY || "sogd_secret_admin_2026",
     NEXT_PUBLIC_STORE_NAME: process.env.NEXT_PUBLIC_STORE_NAME || "SOGD MOBILE",
   },
+  outputFileTracingIncludes: {
+    "/**": ["./prisma/**/*"],
+  },
 };
+
 
 export default nextConfig;
 

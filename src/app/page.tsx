@@ -1,6 +1,9 @@
 import React from "react";
 import Link from "next/link";
-import { db } from "@/lib/db";
+import {
+  getCategories,
+  getProducts,
+} from "@/lib/catalog-service";
 import { storeConfig } from "@/config/store";
 import { ProductCard } from "@/components/product/product-card";
 import { Button } from "@/components/ui/button";
@@ -18,39 +21,18 @@ import {
 export const revalidate = 60; // ISR cache revalidation every minute
 
 export default async function HomePage() {
-  // Fetch categories with product counts
-  const categories = await db.category.findMany({
-    orderBy: { createdAt: "asc" },
-    include: {
-      _count: {
-        select: { products: true },
-      },
-    },
-  });
+  // Fetch categories with product counts (with fallback)
+  const categories = await getCategories();
 
   // Fetch popular products
-  const popularProducts = await db.product.findMany({
-    where: { isPopular: true },
-    take: 8,
-    orderBy: { createdAt: "desc" },
-    include: { category: { select: { name: true } } },
-  });
+  const popularProducts = await getProducts({ isPopular: true, take: 8 });
 
   // Fetch new products
-  const newProducts = await db.product.findMany({
-    where: { isNew: true },
-    take: 4,
-    orderBy: { createdAt: "desc" },
-    include: { category: { select: { name: true } } },
-  });
+  const newProducts = await getProducts({ isNew: true, take: 4 });
 
   // Fetch sale products
-  const saleProducts = await db.product.findMany({
-    where: { isSale: true },
-    take: 4,
-    orderBy: { createdAt: "desc" },
-    include: { category: { select: { name: true } } },
-  });
+  const saleProducts = await getProducts({ isSale: true, take: 4 });
+
 
   // Brand logos / pills
   const brands = [
@@ -224,7 +206,7 @@ export default async function HomePage() {
               {/* Count badge */}
               <div className="relative z-10 self-start">
                 <span className="text-[11px] font-semibold text-slate-400 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-md border border-white/10">
-                  {cat._count.products} товаров
+                  {cat.productCount ?? (cat as any)._count?.products ?? 0} товаров
                 </span>
               </div>
 
@@ -277,14 +259,14 @@ export default async function HomePage() {
               name={product.name}
               price={product.price}
               oldPrice={product.oldPrice}
-              images={JSON.parse(product.images)}
+              images={product.images}
               brand={product.brand}
               stock={product.stock}
               isNew={product.isNew}
               isPopular={product.isPopular}
               isSale={product.isSale}
               sku={product.sku}
-              categoryName={product.category.name}
+              categoryName={product.category?.name || "Аксессуары"}
             />
           ))}
         </div>
@@ -319,14 +301,14 @@ export default async function HomePage() {
               name={product.name}
               price={product.price}
               oldPrice={product.oldPrice}
-              images={JSON.parse(product.images)}
+              images={product.images}
               brand={product.brand}
               stock={product.stock}
               isNew={product.isNew}
               isPopular={product.isPopular}
               isSale={product.isSale}
               sku={product.sku}
-              categoryName={product.category.name}
+              categoryName={product.category?.name || "Аксессуары"}
             />
           ))}
         </div>
@@ -362,14 +344,14 @@ export default async function HomePage() {
                 name={product.name}
                 price={product.price}
                 oldPrice={product.oldPrice}
-                images={JSON.parse(product.images)}
+                images={product.images}
                 brand={product.brand}
                 stock={product.stock}
                 isNew={product.isNew}
                 isPopular={product.isPopular}
                 isSale={product.isSale}
                 sku={product.sku}
-                categoryName={product.category.name}
+                categoryName={product.category?.name || "Аксессуары"}
               />
             ))}
           </div>
