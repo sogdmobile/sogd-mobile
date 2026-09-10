@@ -1,0 +1,80 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  image       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+}
+
+model Product {
+  id               String      @id @default(uuid())
+  slug             String      @unique
+  name             String
+  description      String
+  price            Float
+  oldPrice         Float?
+  currency         String      @default("TJS")
+  images           String      // JSON string array of image URLs
+  categoryId       String
+  category         Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  brand            String
+  compatibleModels String      // JSON string array of models (e.g. ["iPhone 15 Pro", "iPhone 15"])
+  sku              String      @unique
+  stock            Int         @default(10)
+  isNew            Boolean     @default(false)
+  isPopular        Boolean     @default(false)
+  isSale           Boolean     @default(false)
+  color            String?
+  specifications   String?     // JSON string object
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  orderItems       OrderItem[]
+
+  @@index([categoryId])
+  @@index([brand])
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  orderNumber   String      @unique
+  customerName  String
+  phone         String
+  messenger     String?     // Telegram / WhatsApp
+  deliveryType  String      // "DELIVERY" | "PICKUP"
+  city          String?
+  address       String?
+  comment       String?
+  paymentMethod String      @default("CASH_ON_DELIVERY")
+  status        String      @default("NEW") // NEW, CONFIRMED, PROCESSING, DELIVERING, COMPLETED, CANCELLED
+  subtotal      Float
+  deliveryCost  Float       @default(0)
+  total         Float
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  productName String
+  price       Float
+  quantity    Int
+  subtotal    Float
+  createdAt   DateTime @default(now())
+}
