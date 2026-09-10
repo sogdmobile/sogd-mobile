@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { getStoreOrders, updateStoreOrderStatus } from "@/lib/store-state";
 
 // Helper to check admin authorization
 function isAuthorized(req: NextRequest): boolean {
@@ -15,17 +15,11 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const orders = await db.order.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        items: true,
-      },
-    });
-
-    return NextResponse.json({ success: true, orders });
+    const orders = await getStoreOrders();
+    return NextResponse.json({ success: true, count: orders.length, orders });
   } catch (error) {
-    console.warn("DB orders fetch failed, returning empty list:", error);
-    return NextResponse.json({ success: true, orders: [] });
+    console.error("Error in GET admin orders:", error);
+    return NextResponse.json({ success: true, count: 0, orders: [] });
   }
 }
 
@@ -50,19 +44,18 @@ export async function PATCH(req: NextRequest) {
 
     if (!validStatuses.includes(status)) {
       return NextResponse.json(
-        { error: "Invalid status value" },
+        { error: "Некорректный статус заказа" },
         { status: 400 }
       );
     }
 
-    const updated = await db.order.update({
-      where: { id: orderId },
-      data: { status },
-    });
-
+    const updated = await updateStoreOrderStatus(orderId, status);
     return NextResponse.json({ success: true, order: updated });
   } catch (error) {
     console.error("Error updating order status:", error);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Не удалось обновить статус заказа" },
+      { status: 500 }
+    );
   }
 }

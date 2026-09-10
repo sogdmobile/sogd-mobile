@@ -4,6 +4,7 @@ import { createOrderApiSchema } from "@/lib/validation/checkout";
 import { storeConfig } from "@/config/store";
 import { INITIAL_PRODUCTS } from "@/data/initial-catalog";
 import { sendOrderTelegramNotification } from "@/lib/telegram";
+import { addStoreOrder } from "@/lib/store-state";
 
 export async function POST(req: NextRequest) {
   try {
@@ -178,6 +179,25 @@ export async function POST(req: NextRequest) {
         deliveryType,
       };
     }
+
+    // Add to Store State so admin panel sees it immediately
+    addStoreOrder({
+      id: order.id,
+      orderNumber,
+      customerName,
+      phone,
+      messenger: messenger || null,
+      deliveryType,
+      city: deliveryType === "DELIVERY" ? city || storeConfig.city : null,
+      address: deliveryType === "DELIVERY" ? address || null : null,
+      comment: comment || null,
+      status: "NEW",
+      subtotal,
+      deliveryCost,
+      total,
+      createdAt: new Date().toISOString(),
+      items: validatedItems,
+    });
 
     // Trigger instant Telegram Notification to store manager
     sendOrderTelegramNotification({

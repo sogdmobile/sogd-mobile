@@ -1,8 +1,9 @@
-﻿import { db } from "@/lib/db";
+import { db } from "@/lib/db";
 import {
   INITIAL_CATEGORIES,
   INITIAL_PRODUCTS,
 } from "@/data/initial-catalog";
+import { getRuntimeProductsList } from "@/lib/store-state";
 import { CategoryDTO, ProductDTO } from "@/types";
 
 // Helper to convert DB product or fallback product to ProductDTO
@@ -76,8 +77,9 @@ export async function getCategories(): Promise<CategoryDTO[]> {
   }
 
   // Fallback to embedded categories
+  const runtimeList = getRuntimeProductsList();
   return INITIAL_CATEGORIES.map((c) => {
-    const count = INITIAL_PRODUCTS.filter((p) => p.categoryId === c.id || p.category.slug === c.slug).length;
+    const count = runtimeList.filter((p) => p.categoryId === c.id || p.category?.slug === c.slug).length;
     return {
       ...c,
       productCount: count,
@@ -162,11 +164,11 @@ export async function getProducts(options: ProductFilterOptions = {}): Promise<P
     console.warn("Database fetch failed for products, using embedded fallback data:", err);
   }
 
-  // Fallback: Filter INITIAL_PRODUCTS in-memory
-  let list = [...INITIAL_PRODUCTS];
+  // Fallback: Filter runtime products in-memory
+  let list = [...getRuntimeProductsList()];
 
   if (options.category) {
-    list = list.filter((p) => p.category.slug === options.category || p.categoryId === options.category);
+    list = list.filter((p) => p.category?.slug === options.category || p.categoryId === options.category);
   }
   if (options.brand) {
     list = list.filter((p) => p.brand.toLowerCase() === options.brand!.toLowerCase());
@@ -240,7 +242,7 @@ export async function getProductBySlug(slug: string): Promise<ProductDTO | null>
     console.warn("Database fetch failed for product slug, using fallback:", err);
   }
 
-  const fallback = INITIAL_PRODUCTS.find((p) => p.slug === slug);
+  const fallback = getRuntimeProductsList().find((p) => p.slug === slug);
   return fallback ? formatProductDTO(fallback) : null;
 }
 
@@ -263,8 +265,8 @@ export async function getRelatedProducts(categoryId: string, currentProductId: s
     console.warn("Database fetch failed for related products, using fallback:", err);
   }
 
-  const fallback = INITIAL_PRODUCTS.filter(
-    (p) => (p.categoryId === categoryId || p.category.id === categoryId) && p.id !== currentProductId
+  const fallback = getRuntimeProductsList().filter(
+    (p) => (p.categoryId === categoryId || p.category?.id === categoryId) && p.id !== currentProductId
   ).slice(0, limit);
 
   return fallback.map(formatProductDTO);
