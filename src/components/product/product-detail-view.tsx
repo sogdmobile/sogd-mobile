@@ -14,10 +14,7 @@ import {
   Truck,
   ShieldCheck,
   RotateCcw,
-  Star,
   ChevronRight,
-  Sparkles,
-  Layers,
   Smartphone,
   MessageCircle,
   Send,
@@ -37,20 +34,17 @@ export function ProductDetailView({
       "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&w=800&q=80"
   );
   const [quantity, setQuantity] = useState(1);
-  const [isAdded, setIsAdded] = useState(false);
+  const [added, setAdded] = useState(false);
 
   const addItem = useCartStore((s) => s.addItem);
 
   const discount =
     product.oldPrice && product.oldPrice > product.price
-      ? Math.round(
-          ((product.oldPrice - product.price) / product.oldPrice) * 100
-        )
+      ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
       : null;
 
   const handleAddToCart = () => {
     if (product.stock <= 0) return;
-
     addItem(
       {
         productId: product.id,
@@ -65,69 +59,64 @@ export function ProductDetailView({
       },
       quantity
     );
-
-    setIsAdded(true);
-    setTimeout(() => setIsAdded(false), 2000);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
   };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
-      {/* 1. Breadcrumbs */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-400">
-        <Link href="/" className="hover:text-white transition-colors">
-          Главная
-        </Link>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-        <Link href="/catalog" className="hover:text-white transition-colors">
-          Каталог
-        </Link>
+
+      {/* ── 1. Breadcrumb ── */}
+      <nav aria-label="Навигация по разделам" className="flex items-center gap-1.5 text-[11px] text-[#56627a] flex-wrap">
+        <Link href="/" className="hover:text-[#f1f3f7] transition-colors">Главная</Link>
+        <ChevronRight className="w-3 h-3" />
+        <Link href="/catalog" className="hover:text-[#f1f3f7] transition-colors">Каталог</Link>
         {product.category && (
           <>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
+            <ChevronRight className="w-3 h-3" />
             <Link
               href={`/catalog?category=${product.category.slug}`}
-              className="hover:text-white transition-colors"
+              className="hover:text-[#f1f3f7] transition-colors"
             >
               {product.category.name}
             </Link>
           </>
         )}
-        <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-        <span className="text-slate-300 truncate max-w-xs">{product.name}</span>
+        <ChevronRight className="w-3 h-3" />
+        <span className="text-[#8a95a8] truncate max-w-xs">{product.name}</span>
       </nav>
 
-      {/* 2. Main Product Grid (Gallery + Details) */}
+      {/* ── 2. Main Product Grid ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-        {/* Left Column: Image Gallery (5 cols) */}
-        <div className="lg:col-span-6 space-y-4">
-          {/* Main Large Image */}
-          <div className="relative aspect-square w-full rounded-3xl bg-[#131722] border border-[#232A3B] overflow-hidden group">
-            {/* Badges */}
-            <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-              {discount && <Badge variant="sale">Скидка -{discount}%</Badge>}
-              {product.isNew && <Badge variant="new">NEW ARRIVAL</Badge>}
-              {product.isPopular && <Badge variant="popular">ХИТ ПРОДАЖ</Badge>}
-            </div>
 
+        {/* Gallery — left 6 cols */}
+        <div className="lg:col-span-6 space-y-3">
+          {/* Main image */}
+          <div className="relative aspect-square w-full rounded-3xl bg-[#111318] border border-[#1c2030] overflow-hidden">
+            <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5">
+              {discount && <Badge variant="sale">−{discount}%</Badge>}
+              {product.isNew && <Badge variant="new">NEW</Badge>}
+              {product.isPopular && <Badge variant="popular">ХИТ</Badge>}
+            </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={selectedImage}
               alt={product.name}
-              className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full object-cover object-center"
             />
           </div>
 
-          {/* Thumbnails row */}
+          {/* Thumbnails */}
           {product.images.length > 1 && (
-            <div className="flex items-center gap-3 overflow-x-auto pb-2">
+            <div className="flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none">
               {product.images.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedImage(img)}
-                  className={`w-20 h-20 rounded-xl bg-[#131722] border-2 overflow-hidden flex-shrink-0 transition-all ${
+                  className={`w-18 h-18 rounded-xl bg-[#111318] border-2 overflow-hidden shrink-0 transition-all ${
                     selectedImage === img
-                      ? "border-[#0070F3] shadow-md shadow-[#0070F3]/20 scale-105"
-                      : "border-[#232A3B] opacity-70 hover:opacity-100"
+                      ? "border-[#2b7fff] shadow-[0_4px_16px_-4px_rgba(43,127,255,0.4)] scale-105"
+                      : "border-[#1c2030] opacity-60 hover:opacity-100 hover:border-[#252d3d]"
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -142,85 +131,73 @@ export function ProductDetailView({
           )}
         </div>
 
-        {/* Right Column: Buying Information (7 cols) */}
-        <div className="lg:col-span-6 space-y-6">
-          {/* Brand and Stock Status */}
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#00E5FF] bg-[#00E5FF]/10 px-3 py-1 rounded-lg border border-[#00E5FF]/20">
+        {/* Details — right 6 cols */}
+        <div className="lg:col-span-6 space-y-5">
+          {/* Brand + stock */}
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-[#2b7fff] bg-[#2b7fff]/10 px-3 py-1.5 rounded-xl border border-[#2b7fff]/20">
               {product.brand}
             </span>
-
             {product.stock > 0 ? (
-              <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5 bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/20">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[11px] font-semibold text-[#16a34a] flex items-center gap-1.5 bg-[#16a34a]/10 px-3 py-1.5 rounded-xl border border-[#16a34a]/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#16a34a] inline-block" />
                 В наличии ({product.stock} шт.)
               </span>
             ) : (
-              <span className="text-xs font-semibold text-rose-400 bg-rose-500/10 px-3 py-1 rounded-lg border border-rose-500/20">
+              <span className="text-[11px] font-semibold text-[#dc2626] bg-[#dc2626]/10 px-3 py-1.5 rounded-xl border border-[#dc2626]/20">
                 Под заказ
               </span>
             )}
           </div>
 
           {/* Title */}
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#f1f3f7] leading-tight tracking-tight">
             {product.name}
           </h1>
 
-          {/* Rating and SKU */}
-          <div className="flex items-center gap-4 text-xs text-slate-400 pb-4 border-b border-[#232A3B]">
-            <div className="flex items-center gap-1 text-amber-400">
-              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-              <span className="font-bold text-slate-200 text-sm">4.9</span>
-              <span className="text-slate-500">(18 отзывов)</span>
-            </div>
-            <span>•</span>
-            <span className="font-mono">Артикул: {product.sku}</span>
-          </div>
-
-          {/* Price Block */}
-          <div className="p-4 rounded-2xl bg-[#131722] border border-[#232A3B] flex items-baseline gap-4">
-            <span className="text-3xl sm:text-4xl font-black text-white">
+          {/* Price block */}
+          <div className="flex items-baseline gap-4 p-5 rounded-2xl bg-[#111318] border border-[#1c2030]">
+            <span className="text-3xl sm:text-4xl font-extrabold text-[#f1f3f7] tracking-tight">
               {formatPrice(product.price)}
             </span>
             {product.oldPrice && product.oldPrice > product.price && (
-              <span className="text-lg text-slate-500 line-through">
+              <span className="text-[17px] text-[#56627a] line-through">
                 {formatPrice(product.oldPrice)}
               </span>
             )}
             {discount && (
-              <span className="text-xs font-bold text-red-400 bg-red-500/10 px-2 py-0.5 rounded-md border border-red-500/20">
+              <span className="text-[11px] font-bold text-[#e85454] bg-[#e85454]/10 px-2.5 py-1 rounded-lg border border-[#e85454]/20">
                 Экономия {formatPrice(product.oldPrice! - product.price)}
               </span>
             )}
           </div>
 
-          {/* Color & Variants */}
+          {/* Color */}
           {product.color && (
-            <div className="space-y-2">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Цвет: <strong className="text-white normal-case">{product.color}</strong>
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-semibold text-[#56627a] uppercase tracking-wider">
+                Цвет: <strong className="text-[#f1f3f7] normal-case">{product.color}</strong>
               </span>
               <div className="flex items-center gap-2">
-                <span className="px-3.5 py-1.5 rounded-xl bg-[#1A2030] border border-[#0070F3] text-xs font-medium text-white shadow-sm">
+                <span className="px-3.5 py-1.5 rounded-xl bg-[#181b22] border border-[#2b7fff]/50 text-[12px] font-medium text-[#f1f3f7]">
                   {product.color}
                 </span>
               </div>
             </div>
           )}
 
-          {/* Compatible Models */}
+          {/* Compatible models */}
           {product.compatibleModels.length > 0 && (
             <div className="space-y-2">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Smartphone className="w-3.5 h-3.5 text-[#00E5FF]" />
-                <span>Совместимость:</span>
+              <span className="text-[11px] font-semibold text-[#56627a] uppercase tracking-wider flex items-center gap-1.5">
+                <Smartphone className="w-3.5 h-3.5 text-[#00d4ff]" />
+                Совместимость:
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {product.compatibleModels.map((mod) => (
                   <span
                     key={mod}
-                    className="px-2.5 py-1 rounded-lg bg-[#131722] border border-[#232A3B] text-xs text-slate-300 font-medium"
+                    className="px-2.5 py-1 rounded-lg bg-[#111318] border border-[#1c2030] text-[11px] text-[#8a95a8] font-medium"
                   >
                     {mod}
                   </span>
@@ -229,184 +206,155 @@ export function ProductDetailView({
             </div>
           )}
 
-          {/* Quantity & Add to Cart Controls */}
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-4">
-              {/* Quantity Picker */}
-              <div className="flex items-center border border-[#232A3B] bg-[#131722] rounded-xl p-1 h-12">
+          {/* Quantity + Add to cart */}
+          <div className="space-y-3 pt-1">
+            <div className="flex items-center gap-3">
+              {/* Qty picker */}
+              <div className="flex items-center bg-[#111318] border border-[#1c2030] rounded-xl h-12 overflow-hidden">
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="w-10 h-full flex items-center justify-center text-slate-300 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+                  className="w-11 h-full text-[#8a95a8] hover:text-[#f1f3f7] hover:bg-[#181b22] transition-colors text-lg font-medium"
                 >
-                  -
+                  −
                 </button>
-                <span className="w-10 text-center font-bold text-white text-sm">
+                <span className="w-10 text-center font-bold text-[#f1f3f7] text-[14px]">
                   {quantity}
                 </span>
                 <button
-                  onClick={() =>
-                    setQuantity((q) => Math.min(product.stock, q + 1))
-                  }
+                  onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))}
                   disabled={quantity >= product.stock}
-                  className="w-10 h-full flex items-center justify-center text-slate-300 hover:text-white rounded-lg hover:bg-white/5 transition-colors disabled:opacity-40"
+                  className="w-11 h-full text-[#8a95a8] hover:text-[#f1f3f7] hover:bg-[#181b22] transition-colors text-lg font-medium disabled:opacity-30"
                 >
                   +
                 </button>
               </div>
 
-              {/* Add to Cart CTA */}
+              {/* Add to cart CTA */}
               <Button
                 onClick={handleAddToCart}
                 disabled={product.stock <= 0}
                 variant="primary"
                 size="lg"
-                className={`flex-1 h-12 transition-all ${
-                  isAdded ? "bg-emerald-500 hover:bg-emerald-600" : ""
+                className={`flex-1 h-12 font-semibold transition-all ${
+                  added ? "!bg-[#16a34a] hover:!bg-[#15803d]" : ""
                 }`}
               >
-                {isAdded ? (
+                {added ? (
                   <span className="flex items-center gap-2">
-                    <Check className="w-5 h-5" /> Добавлено в корзину
+                    <Check className="w-5 h-5" />
+                    Добавлено в корзину
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
                     <ShoppingBag className="w-5 h-5" />
-                    {product.stock > 0
-                      ? "Добавить в корзину"
-                      : "Товара нет в наличии"}
+                    {product.stock > 0 ? "Добавить в корзину" : "Нет в наличии"}
                   </span>
                 )}
               </Button>
             </div>
 
-            {/* Quick 1-Click WhatsApp & Telegram Purchase */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            {/* Quick order via messenger */}
+            <div className="grid grid-cols-2 gap-2.5">
               <a
                 href={`https://wa.me/992920000000?text=${encodeURIComponent(
-                  `Здравствуйте! Хочу заказать "${product.name}" (${quantity} шт.) за ${
-                    product.price * quantity
-                  } сомони с доставкой по Худжанду.`
+                  `Здравствуйте! Хочу заказать "${product.name}" (${quantity} шт.) — ${product.price * quantity} сомони`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full"
               >
                 <Button
                   variant="outline"
                   size="md"
-                  className="w-full border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500 text-xs font-semibold gap-2 h-11"
+                  className="w-full border-[#16a34a]/30 text-[#16a34a] hover:bg-[#16a34a]/8 hover:border-[#16a34a]/60 text-[12px] font-semibold gap-2 h-11"
                 >
-                  <MessageCircle className="w-4 h-4 text-emerald-400" />
-                  <span>Купить в WhatsApp</span>
+                  <MessageCircle className="w-4 h-4" />
+                  WhatsApp
                 </Button>
               </a>
-
               <a
                 href={`https://t.me/sogdmobile_support?text=${encodeURIComponent(
-                  `Здравствуйте! Хочу заказать "${product.name}" (${quantity} шт.) за ${
-                    product.price * quantity
-                  } сомони с доставкой по Худжанду.`
+                  `Здравствуйте! Хочу заказать "${product.name}" (${quantity} шт.) — ${product.price * quantity} сомони`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full"
               >
                 <Button
                   variant="outline"
                   size="md"
-                  className="w-full border-[#0070F3]/40 text-[#00E5FF] hover:bg-[#0070F3]/10 hover:border-[#0070F3] text-xs font-semibold gap-2 h-11"
+                  className="w-full border-[#2b7fff]/30 text-[#5c9fff] hover:bg-[#2b7fff]/8 hover:border-[#2b7fff]/60 text-[12px] font-semibold gap-2 h-11"
                 >
-                  <Send className="w-4 h-4 text-[#00E5FF]" />
-                  <span>Заказ в Telegram</span>
+                  <Send className="w-4 h-4" />
+                  Telegram
                 </Button>
               </a>
             </div>
           </div>
 
-          {/* Quick Advantages / Guarantees */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-[#232A3B] text-xs text-slate-400">
-            <div className="flex items-center gap-2">
-              <Truck className="w-4 h-4 text-[#00E5FF] flex-shrink-0" />
-              <span>Доставка по Худжанду за 1-3 часа</span>
+          {/* Service guarantees strip */}
+          <div className="grid grid-cols-3 gap-3 pt-4 border-t border-[#1c2030] text-[11px] text-[#56627a]">
+            <div className="flex flex-col items-center text-center gap-1.5">
+              <Truck className="w-4 h-4 text-[#2b7fff]" />
+              <span>Доставка 1–3 ч по Худжанду</span>
             </div>
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+            <div className="flex flex-col items-center text-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-[#16a34a]" />
               <span>Оплата при получении</span>
             </div>
-            <div className="flex items-center gap-2">
-              <RotateCcw className="w-4 h-4 text-[#0070F3] flex-shrink-0" />
+            <div className="flex flex-col items-center text-center gap-1.5">
+              <RotateCcw className="w-4 h-4 text-[#2b7fff]" />
               <span>14 дней на проверку</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 3. Description & Specifications Tabs / Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pt-8 border-t border-[#1a2030]">
-        {/* Description (7 cols) */}
-        <div className="lg:col-span-7 space-y-4">
-          <h3 className="text-xl font-bold text-white flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-[#00E5FF]" />
-            <span>Описание товара</span>
-          </h3>
-          <div className="text-sm sm:text-base text-slate-300 leading-relaxed space-y-3 bg-[#131722]/60 border border-[#232A3B] rounded-2xl p-6">
+      {/* ── 3. Description + Specs ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-8 border-t border-[#1c2030]">
+        <div className="lg:col-span-7 space-y-3">
+          <h2 className="text-xl font-bold text-[#f1f3f7]">Описание</h2>
+          <div className="bg-[#111318] border border-[#1c2030] rounded-2xl p-5 sm:p-6 text-[14px] sm:text-[15px] text-[#8a95a8] leading-relaxed space-y-3">
             <p>{product.description}</p>
-            <p className="text-slate-400 text-xs sm:text-sm">
-              Все аксессуары SOGD MOBILE проходят входной контроль качества. Мы проверяем целостность материалов, работу разъемов и соответствие габаритов оригинальным устройствам.
-            </p>
           </div>
         </div>
 
-        {/* Specifications Table (5 cols) */}
-        <div className="lg:col-span-5 space-y-4">
-          <h3 className="text-xl font-bold text-white flex items-center gap-2">
-            <Layers className="w-5 h-5 text-[#0070F3]" />
-            <span>Характеристики</span>
-          </h3>
-
-          <div className="bg-[#131722] border border-[#232A3B] rounded-2xl overflow-hidden divide-y divide-[#232A3B]/60 text-xs sm:text-sm">
-            <div className="flex justify-between p-3.5">
-              <span className="text-slate-400">Бренд</span>
-              <span className="font-semibold text-white">{product.brand}</span>
+        <div className="lg:col-span-5 space-y-3">
+          <h2 className="text-xl font-bold text-[#f1f3f7]">Характеристики</h2>
+          <div className="bg-[#111318] border border-[#1c2030] rounded-2xl overflow-hidden divide-y divide-[#1c2030] text-[13px]">
+            <div className="flex justify-between px-4 py-3">
+              <span className="text-[#56627a]">Бренд</span>
+              <span className="font-semibold text-[#f1f3f7]">{product.brand}</span>
             </div>
-            <div className="flex justify-between p-3.5">
-              <span className="text-slate-400">Категория</span>
-              <span className="font-semibold text-white">
-                {product.category?.name || "Аксессуары"}
-              </span>
+            {product.category && (
+              <div className="flex justify-between px-4 py-3">
+                <span className="text-[#56627a]">Категория</span>
+                <span className="font-semibold text-[#f1f3f7]">{product.category.name}</span>
+              </div>
+            )}
+            <div className="flex justify-between px-4 py-3">
+              <span className="text-[#56627a]">Артикул</span>
+              <span className="font-mono text-[#8a95a8] text-[12px]">{product.sku}</span>
             </div>
-            <div className="flex justify-between p-3.5">
-              <span className="text-slate-400">Артикул</span>
-              <span className="font-mono text-slate-300">{product.sku}</span>
-            </div>
-
             {product.specifications &&
               Object.entries(product.specifications).map(([key, val]) => (
-                <div key={key} className="flex justify-between p-3.5">
-                  <span className="text-slate-400">{key}</span>
-                  <span className="font-semibold text-white text-right max-w-[220px]">
-                    {val}
-                  </span>
+                <div key={key} className="flex justify-between px-4 py-3">
+                  <span className="text-[#56627a]">{key}</span>
+                  <span className="font-semibold text-[#f1f3f7] text-right max-w-[200px]">{val}</span>
                 </div>
               ))}
           </div>
         </div>
       </div>
 
-      {/* 4. Related Products */}
+      {/* ── 4. Related Products ── */}
       {relatedProducts.length > 0 && (
-        <div className="pt-8 border-t border-[#1a2030] space-y-6">
+        <div className="pt-8 border-t border-[#1c2030] space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-white">Похожие аксессуары</h2>
-            <Link
-              href="/catalog"
-              className="text-xs sm:text-sm text-[#00E5FF] hover:underline"
-            >
-              Смотреть весь каталог →
+            <h2 className="text-xl sm:text-2xl font-bold text-[#f1f3f7]">Похожие аксессуары</h2>
+            <Link href="/catalog" className="text-[13px] text-[#5c9fff] hover:text-[#00d4ff] font-medium flex items-center gap-1 transition-colors">
+              Весь каталог <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {relatedProducts.map((rel) => (
               <ProductCard
                 key={rel.id}

@@ -21,33 +21,33 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    const baseStyles =
-      "inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0B0D12] focus:ring-[#0070F3] disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] select-none cursor-pointer";
+    const base =
+      "inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2b7fff]/50 disabled:opacity-40 disabled:pointer-events-none active:scale-[0.97] select-none cursor-pointer";
 
-    const variantStyles = {
+    const variants: Record<string, string> = {
       primary:
-        "bg-[#0070F3] hover:bg-[#005bb5] text-white shadow-lg shadow-[#0070F3]/25 hover:shadow-[#0070F3]/40 border border-[#0080ff]/30",
+        "bg-[#2b7fff] hover:bg-[#1d6be0] text-white shadow-[0_4px_24px_-6px_rgba(43,127,255,0.5)] border border-[#2b7fff]/20",
       secondary:
-        "bg-[#1A2030] hover:bg-[#232A3E] text-slate-100 border border-[#2B354C]",
+        "bg-[#181b22] hover:bg-[#1e222d] text-[#f1f3f7] border border-[#252d3d] hover:border-[#323d52]",
       outline:
-        "bg-transparent hover:bg-white/5 text-slate-200 border border-slate-700 hover:border-slate-500",
-      ghost: "bg-transparent hover:bg-white/5 text-slate-300 hover:text-white",
+        "bg-transparent hover:bg-white/4 text-[#8a95a8] hover:text-[#f1f3f7] border border-[#252d3d] hover:border-[#323d52]",
+      ghost: "bg-transparent hover:bg-white/5 text-[#8a95a8] hover:text-[#f1f3f7]",
       danger:
-        "bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30",
+        "bg-[#dc2626]/12 hover:bg-[#dc2626]/20 text-[#e85454] border border-[#dc2626]/25",
     };
 
-    const sizeStyles = {
-      sm: "text-xs px-3 py-1.5 h-8 gap-1.5",
-      md: "text-sm px-4 py-2.5 h-11 gap-2",
-      lg: "text-base px-6 py-3 h-13 gap-2.5 font-semibold",
-      icon: "h-11 w-11 p-0 rounded-xl",
+    const sizes: Record<string, string> = {
+      sm: "text-[11px] px-3 py-1.5 h-8 gap-1.5",
+      md: "text-[13px] px-4 py-2.5 h-10 gap-2",
+      lg: "text-[14px] px-6 py-3 h-12 gap-2.5 font-semibold",
+      icon: "h-10 w-10 p-0",
     };
 
     return (
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        className={cn(baseStyles, variantStyles[variant], sizeStyles[size], className)}
+        className={cn(base, variants[variant], sizes[size], className)}
         {...props}
       >
         {isLoading && (

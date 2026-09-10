@@ -42,10 +42,10 @@ export function ProductCard({
   className,
 }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem);
-  const [isAdded, setIsAdded] = useState(false);
+  const [added, setAdded] = useState(false);
 
   const mainImage =
-    images && images.length > 0
+    images?.length > 0
       ? images[0]
       : "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&w=600&q=80";
 
@@ -57,38 +57,28 @@ export function ProductCard({
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
     if (stock <= 0) return;
 
-    addItem({
-      productId: id,
-      slug,
-      name,
-      price,
-      image: mainImage,
-      sku,
-      stock,
-      brand,
-      categoryName,
-    });
-
-    setIsAdded(true);
-    setTimeout(() => setIsAdded(false), 1500);
+    addItem({ productId: id, slug, name, price, image: mainImage, sku, stock, brand, categoryName });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
   };
 
   return (
-    <div
+    <article
       className={cn(
-        "group relative flex flex-col justify-between bg-[#131722] border border-[#232A3B] rounded-2xl overflow-hidden transition-all duration-300 hover:border-[#0070F3]/60 hover:shadow-xl hover:shadow-[#0070F3]/10",
+        "group relative flex flex-col bg-[#111318] border border-[#1c2030] rounded-2xl overflow-hidden transition-all duration-220",
+        "hover:border-[#252d3d] hover:shadow-[0_12px_40px_-8px_rgba(43,127,255,0.18)]",
         className
       )}
+      style={{ transition: "border-color 220ms cubic-bezier(0.16,1,0.3,1), box-shadow 220ms cubic-bezier(0.16,1,0.3,1)" }}
     >
-      {/* Top Image & Badges */}
-      <Link href={`/product/${slug}`} className="block relative aspect-square w-full overflow-hidden bg-[#0e121a]">
-        {/* Badges Container */}
-        <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1.5 items-start">
+      {/* ── Image area ── */}
+      <Link href={`/product/${slug}`} className="block relative aspect-square w-full overflow-hidden bg-[#0d0f14] shrink-0">
+        {/* Badges top-left */}
+        <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1 items-start">
           {discount ? (
-            <Badge variant="sale">-{discount}%</Badge>
+            <Badge variant="sale">−{discount}%</Badge>
           ) : isSale ? (
             <Badge variant="sale">АКЦИЯ</Badge>
           ) : null}
@@ -96,59 +86,55 @@ export function ProductCard({
           {isPopular && !isNew && <Badge variant="popular">ХИТ</Badge>}
         </div>
 
-        {/* Stock Status Indicator */}
+        {/* Stock indicator top-right */}
         <div className="absolute top-2.5 right-2.5 z-10">
           {stock > 0 ? (
-            <span className="inline-flex items-center gap-1 bg-[#0b0d12]/80 backdrop-blur-md text-[10px] text-emerald-400 font-medium px-2 py-0.5 rounded-full border border-emerald-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="inline-flex items-center gap-1 bg-[#08090c]/80 backdrop-blur-sm text-[10px] text-[#16a34a] font-medium px-2 py-0.5 rounded-full border border-[#16a34a]/25">
+              <span className="w-1 h-1 rounded-full bg-[#16a34a] inline-block" />
               В наличии
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 bg-[#0b0d12]/80 backdrop-blur-md text-[10px] text-rose-400 font-medium px-2 py-0.5 rounded-full border border-rose-500/20">
+            <span className="inline-flex items-center gap-1 bg-[#08090c]/80 backdrop-blur-sm text-[10px] text-[#dc2626] font-medium px-2 py-0.5 rounded-full border border-[#dc2626]/25">
               Под заказ
             </span>
           )}
         </div>
 
-        {/* Product Image */}
+        {/* Product image */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={mainImage}
           alt={name}
           loading="lazy"
-          className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+          className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.04]"
         />
 
-        {/* Brand Tag Pill */}
+        {/* Brand label bottom-left */}
         <div className="absolute bottom-2.5 left-2.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-md border border-white/10">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#8a95a8] bg-[#08090c]/75 backdrop-blur-sm px-2 py-0.5 rounded-md">
             {brand}
           </span>
         </div>
       </Link>
 
-      {/* Product Info */}
-      <div className="p-3.5 sm:p-4 flex flex-col flex-1 justify-between gap-3">
-        <div>
-          <Link href={`/product/${slug}`} className="group-hover:text-[#00E5FF] transition-colors">
-            <h3 className="font-semibold text-sm sm:text-base text-white line-clamp-2 leading-snug">
-              {name}
-            </h3>
-          </Link>
-          <p className="text-[11px] text-slate-500 mt-1 font-mono">
-            Арт: {sku}
-          </p>
-        </div>
+      {/* ── Info area ── */}
+      <div className="flex flex-col flex-1 justify-between p-3 sm:p-3.5 gap-2.5">
+        {/* Product name */}
+        <Link href={`/product/${slug}`}>
+          <h3 className="text-[13px] sm:text-sm font-semibold text-[#f1f3f7] line-clamp-2 leading-snug hover:text-[#5c9fff] transition-colors">
+            {name}
+          </h3>
+        </Link>
 
-        {/* Price and Add to Cart Button */}
-        <div className="pt-2 border-t border-[#232A3B]/60 flex items-center justify-between gap-2">
-          <div className="flex flex-col">
+        {/* Price row + cart button */}
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#1c2030]">
+          <div className="flex flex-col leading-none">
             {oldPrice && oldPrice > price && (
-              <span className="text-[11px] sm:text-xs text-slate-500 line-through">
+              <span className="text-[10px] text-[#56627a] line-through mb-0.5">
                 {formatPrice(oldPrice)}
               </span>
             )}
-            <span className="font-bold text-sm sm:text-base text-white tracking-tight">
+            <span className="text-[14px] sm:text-[15px] font-bold text-[#f1f3f7] tracking-tight">
               {formatPrice(price)}
             </span>
           </div>
@@ -156,22 +142,22 @@ export function ProductCard({
           <button
             onClick={handleAddToCart}
             disabled={stock <= 0}
-            aria-label={`Добавить в корзину ${name}`}
+            aria-label={`Добавить в корзину: ${name}`}
             className={cn(
-              "h-9 w-9 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed",
-              isAdded
-                ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 scale-105"
-                : "bg-[#0070F3] hover:bg-[#005bb5] text-white shadow-md shadow-[#0070F3]/30 hover:scale-105 active:scale-95"
+              "w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed shrink-0",
+              added
+                ? "bg-[#16a34a] text-white shadow-[0_4px_16px_-4px_rgba(22,163,74,0.5)] scale-105"
+                : "bg-[#2b7fff] hover:bg-[#1d6be0] text-white shadow-[0_4px_16px_-4px_rgba(43,127,255,0.4)] hover:scale-105 active:scale-95"
             )}
           >
-            {isAdded ? (
-              <Check className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
+            {added ? (
+              <Check className="w-4 h-4 stroke-[2.5]" />
             ) : (
-              <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
+              <ShoppingBag className="w-4 h-4" />
             )}
           </button>
         </div>
       </div>
-    </div>
+    </article>
   );
 }

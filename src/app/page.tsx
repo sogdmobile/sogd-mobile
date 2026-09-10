@@ -1,140 +1,129 @@
 import React from "react";
 import Link from "next/link";
-import {
-  getCategories,
-  getProducts,
-} from "@/lib/catalog-service";
+import { getCategories, getProducts } from "@/lib/catalog-service";
 import { storeConfig } from "@/config/store";
 import { ProductCard } from "@/components/product/product-card";
-import { Button } from "@/components/ui/button";
+import { PHONE_BRANDS } from "@/data/phone-brands";
 import {
   ArrowRight,
-  Sparkles,
   Truck,
   MapPin,
   Phone,
   Flame,
   Zap,
   Tag,
+  ShieldCheck,
 } from "lucide-react";
 
-export const revalidate = 60; // ISR cache revalidation every minute
+export const revalidate = 60;
 
 export default async function HomePage() {
-  // Fetch categories with product counts (with fallback)
   const categories = await getCategories();
-
-  // Fetch popular products
   const popularProducts = await getProducts({ isPopular: true, take: 8 });
-
-  // Fetch new products
   const newProducts = await getProducts({ isNew: true, take: 4 });
-
-  // Fetch sale products
   const saleProducts = await getProducts({ isSale: true, take: 4 });
 
-
-  // Brand logos / pills
-  const brands = [
-    "Apple",
-    "Samsung",
-    "Xiaomi",
-    "Redmi",
-    "Honor",
-    "Huawei",
-    "Tecno",
-    "Infinix",
-  ];
+  // De-duplicate: remove from newProducts & saleProducts any IDs already in popularProducts
+  const popularIds = new Set(popularProducts.map((p) => p.id));
+  const uniqueNew = newProducts.filter((p) => !popularIds.has(p.id));
+  const uniqueSale = saleProducts.filter((p) => !popularIds.has(p.id));
 
   return (
-    <div className="flex flex-col gap-16 sm:gap-24 pb-20">
-      {/* 1. HERO SECTION */}
-      <section className="relative overflow-hidden pt-8 pb-16 sm:pt-16 sm:pb-24 border-b border-[#1a2030]">
-        {/* Glow ambient backgrounds */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-[#0070F3]/15 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute top-1/3 right-10 w-[300px] h-[250px] bg-[#00E5FF]/10 rounded-full blur-[100px] pointer-events-none" />
+    <div className="flex flex-col gap-20 sm:gap-28 pb-24">
+
+      {/* ━━━ 1. HERO ━━━ */}
+      <section className="relative overflow-hidden pt-10 pb-16 sm:pt-16 sm:pb-24">
+        {/* Ambient glows */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#2b7fff]/8 rounded-full blur-[140px]" />
+          <div className="absolute top-1/2 right-0 w-[400px] h-[400px] bg-[#00d4ff]/5 rounded-full blur-[120px]" />
+        </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Left Hero Text */}
-            <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              {/* Pill badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#131722] border border-[#232A3B] text-xs text-slate-300 font-medium">
-                <Sparkles className="w-3.5 h-3.5 text-[#00E5FF]" />
-                <span>Премиальный магазин аксессуаров в Худжанде</span>
+
+            {/* ── Left: Copy ── */}
+            <div className="lg:col-span-7 space-y-7 text-center lg:text-left">
+              {/* Eyebrow */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#111318] border border-[#252d3d] text-[11px] text-[#8a95a8] font-semibold tracking-wide">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#16a34a] inline-block shrink-0" />
+                {storeConfig.city} — аксессуары для смартфонов
               </div>
 
-              {/* Main Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.1]">
-                Аксессуары для <br className="hidden sm:block" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-[#00E5FF]">
-                  твоего смартфона
+              {/* Headline */}
+              <h1 className="text-[2.5rem] sm:text-5xl lg:text-6xl font-extrabold text-[#f1f3f7] leading-[1.08] tracking-tight">
+                Всё для&nbsp;вашего{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5c9fff] to-[#00d4ff]">
+                  смартфона
                 </span>
               </h1>
 
-              {/* Subheadline */}
-              <p className="text-base sm:text-lg text-slate-400 max-w-xl mx-auto lg:mx-0 font-normal leading-relaxed">
-                Чехлы, стекла, зарядки и электроника в одном месте. Гарантия качества, примерка и быстрая доставка по городу.
+              {/* Sub */}
+              <p className="text-base sm:text-lg text-[#8a95a8] max-w-lg mx-auto lg:mx-0 leading-relaxed">
+                Чехлы, стекла, зарядки, кабели и электроника. Самовывоз сразу или
+                доставка по Худжанду.
               </p>
 
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2">
-                <Link href="/catalog" className="w-full sm:w-auto">
-                  <Button variant="primary" size="lg" className="w-full sm:w-auto gap-2">
-                    <span>Смотреть каталог</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-1">
+                <Link
+                  href="/catalog"
+                  className="inline-flex items-center justify-center gap-2 h-12 px-6 bg-[#2b7fff] hover:bg-[#1d6be0] text-white font-semibold text-sm rounded-xl transition-colors w-full sm:w-auto shadow-[0_4px_24px_-4px_rgba(43,127,255,0.45)]"
+                >
+                  Смотреть каталог
+                  <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link href="/catalog?sale=true" className="w-full sm:w-auto">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto gap-2 border-red-500/30 text-red-400 hover:bg-red-500/10">
-                    <Tag className="w-4 h-4" />
-                    <span>Специальные акции</span>
-                  </Button>
+                <Link
+                  href="/catalog?sale=true"
+                  className="inline-flex items-center justify-center gap-2 h-12 px-6 bg-transparent hover:bg-[#e85454]/8 text-[#e85454] font-semibold text-sm rounded-xl border border-[#e85454]/30 hover:border-[#e85454]/60 transition-all w-full sm:w-auto"
+                >
+                  <Tag className="w-4 h-4" />
+                  Акции
                 </Link>
               </div>
 
-              {/* Quick Trust Signals */}
-              <div className="pt-6 grid grid-cols-3 gap-4 border-t border-[#1e2536] max-w-md mx-auto lg:mx-0 text-left">
-                <div>
-                  <p className="text-xl sm:text-2xl font-black text-white">100%</p>
-                  <p className="text-xs text-slate-500">Оригинальное качество</p>
-                </div>
-                <div>
-                  <p className="text-xl sm:text-2xl font-black text-[#00E5FF]">1–3 ч</p>
-                  <p className="text-xs text-slate-500">Доставка по Худжанду</p>
-                </div>
-                <div>
-                  <p className="text-xl sm:text-2xl font-black text-white">1000+</p>
-                  <p className="text-xs text-slate-500">Моделей в наличии</p>
-                </div>
+              {/* Trust strip */}
+              <div className="flex items-center justify-center lg:justify-start gap-6 pt-4 border-t border-[#1c2030] text-[#56627a] text-[12px]">
+                <span className="flex items-center gap-1.5">
+                  <Truck className="w-3.5 h-3.5 text-[#2b7fff]" />
+                  Доставка 1–3 ч
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#16a34a]" />
+                  Оплата при получении
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-[#00d4ff]" />
+                  Самовывоз бесплатно
+                </span>
               </div>
             </div>
 
-            {/* Right Hero Visual Banner */}
-            <div className="lg:col-span-5 relative">
-              <div className="relative mx-auto max-w-md lg:max-w-none aspect-[4/4] rounded-3xl bg-gradient-to-tr from-[#131722] to-[#1A2030] p-1 border border-[#232A3B] shadow-2xl overflow-hidden group">
+            {/* ── Right: Visual ── */}
+            <div className="lg:col-span-5">
+              <div className="relative mx-auto max-w-md aspect-square rounded-3xl overflow-hidden border border-[#1c2030] bg-[#0d0f14] group">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?auto=format&fit=crop&w=800&q=80"
-                  alt="SOGD MOBILE Аксессуары"
-                  className="w-full h-full object-cover rounded-[22px] transition-transform duration-700 group-hover:scale-105"
+                  alt="SOGD MOBILE — аксессуары для смартфонов"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-85"
                 />
-
-                {/* Floating Highlight Card */}
-                <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-[#0B0D12]/85 backdrop-blur-md border border-white/10 shadow-2xl">
+                {/* Overlay card */}
+                <div className="absolute bottom-5 left-5 right-5 p-4 rounded-2xl bg-[#08090c]/88 backdrop-blur-md border border-[#252d3d] shadow-xl">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-[#00E5FF]">
-                        Флагманская коллекция
-                      </span>
-                      <h4 className="text-sm font-bold text-white mt-0.5">
-                        SOGD Titan & MagSafe 2026
-                      </h4>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#2b7fff] mb-0.5">
+                        Чехлы и защита 2025
+                      </p>
+                      <p className="text-[13px] font-bold text-[#f1f3f7]">
+                        iPhone, Samsung, Xiaomi
+                      </p>
                     </div>
-                    <Link href="/catalog?category=cases">
-                      <span className="text-xs font-semibold text-[#0070F3] hover:text-[#00E5FF] transition-colors flex items-center gap-1">
-                        Выбрать →
-                      </span>
+                    <Link
+                      href="/catalog?category=cases"
+                      className="text-[12px] font-semibold text-[#5c9fff] hover:text-[#00d4ff] transition-colors flex items-center gap-1"
+                    >
+                      Выбрать →
                     </Link>
                   </div>
                 </div>
@@ -144,83 +133,106 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 2. PHONE BRANDS STRIP */}
+      {/* ━━━ 2. BRAND SELECTOR ━━━ */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Аксессуары для брендов:
-          </p>
-          <div className="flex flex-wrap items-center gap-2">
-            {brands.map((brand) => (
-              <Link
-                key={brand}
-                href={`/catalog?brand=${encodeURIComponent(brand)}`}
-                className="px-3 py-1 text-xs font-medium rounded-lg bg-[#131722] hover:bg-[#1A2030] text-slate-300 hover:text-white border border-[#232A3B] transition-colors"
-              >
-                {brand}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 3. CATEGORIES GRID */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="flex items-end justify-between mb-8">
+        <div className="flex items-end justify-between mb-5">
           <div>
-            <span className="text-xs uppercase font-bold text-[#00E5FF] tracking-wider">
-              Разделы
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mt-1">
-              Популярные категории
+            <p className="section-label mb-1">Выберите бренд</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#f1f3f7] tracking-tight">
+              Найти аксессуар для вашего телефона
             </h2>
           </div>
           <Link
             href="/catalog"
-            className="text-sm text-slate-400 hover:text-white font-medium flex items-center gap-1 transition-colors"
+            className="hidden sm:flex items-center gap-1 text-[13px] text-[#56627a] hover:text-[#f1f3f7] font-medium transition-colors"
           >
-            Все категории →
+            Весь каталог <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        {/* Brand pills */}
+        <div className="flex flex-wrap gap-2">
+          {PHONE_BRANDS.map((brand) => (
+            <Link
+              key={brand.slug}
+              href={`/catalog?brand=${encodeURIComponent(brand.slug)}`}
+              className="group inline-flex items-center gap-2 h-10 px-4 bg-[#111318] hover:bg-[#181b22] border border-[#1c2030] hover:border-[#2b7fff]/50 rounded-xl text-[13px] font-medium text-[#8a95a8] hover:text-[#f1f3f7] transition-all"
+            >
+              <span>{brand.name}</span>
+              <span className="text-[10px] text-[#56627a] group-hover:text-[#2b7fff] transition-colors flex items-center gap-0.5">
+                {brand.models.length}
+                <span className="hidden sm:inline"> мод.</span>
+              </span>
+            </Link>
+          ))}
+        </div>
+
+        {/* Popular model quick chips */}
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {["iPhone 16 Pro", "iPhone 15 Pro", "Galaxy S24 Ultra", "Redmi Note 13", "Xiaomi 14"].map((model) => (
+            <Link
+              key={model}
+              href={`/catalog?model=${encodeURIComponent(model)}`}
+              className="inline-flex items-center h-7 px-3 bg-[#0d0f14] hover:bg-[#111318] border border-[#1c2030] hover:border-[#252d3d] rounded-full text-[11px] font-medium text-[#56627a] hover:text-[#8a95a8] transition-all"
+            >
+              {model}
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ━━━ 3. CATEGORY GRID ━━━ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="flex items-end justify-between mb-6">
+          <div>
+            <p className="section-label mb-1">Категории</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#f1f3f7] tracking-tight">
+              Что вы ищете?
+            </h2>
+          </div>
+          <Link
+            href="/catalog"
+            className="text-[13px] text-[#56627a] hover:text-[#f1f3f7] font-medium transition-colors flex items-center gap-1"
+          >
+            Все категории <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {categories.map((cat) => (
             <Link
               key={cat.id}
               href={`/catalog?category=${cat.slug}`}
-              className="group relative flex flex-col justify-between h-44 sm:h-52 rounded-2xl bg-[#131722] border border-[#232A3B] p-4 overflow-hidden transition-all duration-300 hover:border-[#0070F3]/60 hover:shadow-lg hover:shadow-[#0070F3]/10"
+              className="group relative flex flex-col justify-between h-40 sm:h-48 rounded-2xl bg-[#111318] border border-[#1c2030] p-4 overflow-hidden transition-all duration-220 hover:border-[#252d3d] hover:shadow-[0_8px_32px_-8px_rgba(43,127,255,0.15)]"
             >
-              {/* Background category image with gradient overlay */}
+              {/* BG image */}
               {cat.image && (
                 <div className="absolute inset-0 z-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={cat.image}
-                    alt={cat.name}
-                    className="w-full h-full object-cover opacity-25 group-hover:opacity-40 transition-opacity duration-500 group-hover:scale-105"
+                    alt=""
+                    aria-hidden="true"
+                    className="w-full h-full object-cover opacity-20 group-hover:opacity-30 transition-opacity duration-400 group-hover:scale-105"
+                    style={{ transition: "opacity 400ms ease, transform 400ms ease" }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#131722] via-[#131722]/80 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#111318] via-[#111318]/75 to-transparent" />
                 </div>
               )}
 
               {/* Count badge */}
               <div className="relative z-10 self-start">
-                <span className="text-[11px] font-semibold text-slate-400 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-md border border-white/10">
-                  {cat.productCount ?? (cat as any)._count?.products ?? 0} товаров
+                <span className="text-[10px] font-semibold text-[#56627a] bg-[#08090c]/60 backdrop-blur-sm px-2 py-0.5 rounded-md">
+                  {cat.productCount ?? 0} товаров
                 </span>
               </div>
 
-              {/* Title & Arrow */}
+              {/* Name + arrow */}
               <div className="relative z-10 flex items-end justify-between">
-                <div>
-                  <h3 className="font-bold text-base sm:text-lg text-white group-hover:text-[#00E5FF] transition-colors leading-tight">
-                    {cat.name}
-                  </h3>
-                  <p className="text-[11px] text-slate-400 line-clamp-1 mt-0.5 hidden sm:block">
-                    {cat.description}
-                  </p>
-                </div>
-                <div className="w-7 h-7 rounded-lg bg-white/5 group-hover:bg-[#0070F3] text-slate-300 group-hover:text-white flex items-center justify-center transition-all flex-shrink-0">
+                <h3 className="font-bold text-[14px] sm:text-base text-[#f1f3f7] group-hover:text-[#5c9fff] transition-colors leading-tight">
+                  {cat.name}
+                </h3>
+                <div className="w-7 h-7 rounded-lg bg-[#1c2030] group-hover:bg-[#2b7fff] text-[#8a95a8] group-hover:text-white flex items-center justify-center transition-all shrink-0 ml-2">
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>
               </div>
@@ -229,28 +241,27 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 4. POPULAR PRODUCTS */}
+      {/* ━━━ 4. POPULAR PRODUCTS ━━━ */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="flex items-end justify-between mb-8">
+        <div className="flex items-end justify-between mb-6">
           <div>
-            <div className="flex items-center gap-1.5 text-amber-400 text-xs uppercase font-bold tracking-wider">
-              <Flame className="w-4 h-4" />
+            <div className="flex items-center gap-1.5 section-label mb-1 text-amber-400">
+              <Flame className="w-3.5 h-3.5" />
               <span>Хиты продаж</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mt-1">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#f1f3f7] tracking-tight">
               Популярные товары
             </h2>
           </div>
           <Link
             href="/catalog?sort=popular"
-            className="text-sm text-slate-400 hover:text-white font-medium flex items-center gap-1 transition-colors"
+            className="text-[13px] text-[#56627a] hover:text-[#f1f3f7] font-medium transition-colors flex items-center gap-1"
           >
-            Смотреть все →
+            Смотреть все <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        {/* 4 cols desktop, 3 tablet, 2 mobile */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {popularProducts.map((product) => (
             <ProductCard
               key={product.id}
@@ -272,71 +283,29 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 5. NEW ARRIVALS */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <div className="flex items-center gap-1.5 text-[#00E5FF] text-xs uppercase font-bold tracking-wider">
-              <Zap className="w-4 h-4" />
-              <span>Свежие поступления</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mt-1">
-              Новинки недели
-            </h2>
-          </div>
-          <Link
-            href="/catalog?sort=new"
-            className="text-sm text-slate-400 hover:text-white font-medium flex items-center gap-1 transition-colors"
-          >
-            Все новинки →
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {newProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              id={product.id}
-              slug={product.slug}
-              name={product.name}
-              price={product.price}
-              oldPrice={product.oldPrice}
-              images={product.images}
-              brand={product.brand}
-              stock={product.stock}
-              isNew={product.isNew}
-              isPopular={product.isPopular}
-              isSale={product.isSale}
-              sku={product.sku}
-              categoryName={product.category?.name || "Аксессуары"}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* 6. SPECIAL OFFERS / SALE */}
-      {saleProducts.length > 0 && (
+      {/* ━━━ 5. NEW ARRIVALS ━━━ */}
+      {uniqueNew.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="flex items-end justify-between mb-8">
+          <div className="flex items-end justify-between mb-6">
             <div>
-              <div className="flex items-center gap-1.5 text-red-400 text-xs uppercase font-bold tracking-wider">
-                <Tag className="w-4 h-4" />
-                <span>Выгодные цены</span>
+              <div className="flex items-center gap-1.5 section-label mb-1 text-[#00d4ff]">
+                <Zap className="w-3.5 h-3.5" />
+                <span>Свежие поступления</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mt-1">
-                Специальные предложения
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#f1f3f7] tracking-tight">
+                Новинки
               </h2>
             </div>
             <Link
-              href="/catalog?sale=true"
-              className="text-sm text-red-400 hover:text-red-300 font-medium flex items-center gap-1 transition-colors"
+              href="/catalog?sort=new"
+              className="text-[13px] text-[#56627a] hover:text-[#f1f3f7] font-medium transition-colors flex items-center gap-1"
             >
-              Все акции →
+              Все новинки <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {saleProducts.map((product) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {uniqueNew.map((product) => (
               <ProductCard
                 key={product.id}
                 id={product.id}
@@ -358,121 +327,170 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 7. DELIVERY & PICKUP SECTION */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="rounded-3xl bg-gradient-to-b from-[#131722] to-[#0e121a] border border-[#232A3B] p-6 sm:p-10 lg:p-12">
-          <div className="max-w-3xl mb-10">
-            <span className="text-xs uppercase font-bold text-[#00E5FF] tracking-wider">
-              Сервис и логистика
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-black text-white mt-1">
-              Удобное получение заказа
-            </h2>
-            <p className="text-sm sm:text-base text-slate-400 mt-2">
-              Мы ценим ваше время. Заказывайте на сайте и забирайте в нашем магазине в центре Худжанда или оформляйте курьерскую доставку прямо до двери.
-            </p>
+      {/* ━━━ 6. SALE ━━━ */}
+      {uniqueSale.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <div className="flex items-center gap-1.5 section-label mb-1 text-[#e85454]">
+                <Tag className="w-3.5 h-3.5" />
+                <span>Выгодные цены</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#f1f3f7] tracking-tight">
+                Специальные предложения
+              </h2>
+            </div>
+            <Link
+              href="/catalog?sale=true"
+              className="text-[13px] text-[#e85454] hover:text-[#f87171] font-medium transition-colors flex items-center gap-1"
+            >
+              Все акции <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Delivery card */}
-            <div className="p-6 sm:p-8 rounded-2xl bg-[#0b0d12] border border-[#1e2536] flex flex-col justify-between space-y-6">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-[#0070F3]/15 text-[#00E5FF] flex items-center justify-center">
-                  <Truck className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-white">Доставка курьером</h3>
-                <ul className="space-y-2.5 text-xs sm:text-sm text-slate-300">
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF]" />
-                    <span><strong>Срок:</strong> {storeConfig.delivery.inCityTime}</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF]" />
-                    <span><strong>Стоимость по городу:</strong> {storeConfig.delivery.inCityCost} сомони (Бесплатно от {storeConfig.delivery.freeDeliveryThreshold} сомони)</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF]" />
-                    <span>Стоимость доставки за пределы города уточняется при подтверждении заказа оператором</span>
-                  </li>
-                </ul>
-              </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {uniqueSale.map((product) => (
+              <ProductCard
+                key={product.id}
+                id={product.id}
+                slug={product.slug}
+                name={product.name}
+                price={product.price}
+                oldPrice={product.oldPrice}
+                images={product.images}
+                brand={product.brand}
+                stock={product.stock}
+                isNew={product.isNew}
+                isPopular={product.isPopular}
+                isSale={product.isSale}
+                sku={product.sku}
+                categoryName={product.category?.name || "Аксессуары"}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
-              <div className="pt-4 border-t border-[#1e2536] text-xs text-slate-500">
-                Оплата наличными или переводом курьеру при получении
-              </div>
+      {/* ━━━ 7. DELIVERY & PICKUP ━━━ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="rounded-3xl bg-[#111318] border border-[#1c2030] overflow-hidden">
+          <div className="p-6 sm:p-10 lg:p-12">
+            <div className="max-w-2xl mb-10">
+              <p className="section-label mb-2">Сервис</p>
+              <h2 className="text-2xl sm:text-4xl font-bold text-[#f1f3f7] tracking-tight">
+                Удобное получение заказа
+              </h2>
+              <p className="text-[14px] sm:text-base text-[#8a95a8] mt-3 leading-relaxed">
+                Оформите заказ онлайн — заберите в магазине за 15 минут или
+                получите курьером в удобное время.
+              </p>
             </div>
 
-            {/* Pickup card */}
-            <div className="p-6 sm:p-8 rounded-2xl bg-[#0b0d12] border border-[#1e2536] flex flex-col justify-between space-y-6">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-[#0070F3]/15 text-[#00E5FF] flex items-center justify-center">
-                  <MapPin className="w-6 h-6" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Delivery */}
+              <div className="p-6 rounded-2xl bg-[#0d0f14] border border-[#1c2030] space-y-5">
+                <div className="w-11 h-11 rounded-xl bg-[#2b7fff]/12 text-[#2b7fff] flex items-center justify-center">
+                  <Truck className="w-5 h-5" />
                 </div>
-                <h3 className="text-xl font-bold text-white">Самовывоз из магазина</h3>
-                <ul className="space-y-2.5 text-xs sm:text-sm text-slate-300">
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    <span><strong>Бесплатно:</strong> В любое удобное время в часы работы</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5" />
-                    <span><strong>Адрес:</strong> {storeConfig.address}</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    <span><strong>График:</strong> {storeConfig.workingHours.weekdays}, {storeConfig.workingHours.weekends}</span>
-                  </li>
-                </ul>
+                <div>
+                  <h3 className="text-lg font-bold text-[#f1f3f7] mb-3">Доставка курьером</h3>
+                  <ul className="space-y-2 text-[13px] text-[#8a95a8]">
+                    <li className="flex items-start gap-2">
+                      <span className="w-1 h-1 rounded-full bg-[#2b7fff] mt-1.5 shrink-0" />
+                      <span><strong className="text-[#f1f3f7]">Срок:</strong> {storeConfig.delivery.inCityTime}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1 h-1 rounded-full bg-[#2b7fff] mt-1.5 shrink-0" />
+                      <span>
+                        <strong className="text-[#f1f3f7]">Стоимость:</strong>{" "}
+                        {storeConfig.delivery.inCityCost} сомони. Бесплатно от{" "}
+                        {storeConfig.delivery.freeDeliveryThreshold} сомони
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1 h-1 rounded-full bg-[#2b7fff] mt-1.5 shrink-0" />
+                      <span>Оплата наличными или переводом при получении</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
 
-              <div className="pt-4 border-t border-[#1e2536] flex items-center justify-between text-xs text-slate-400">
-                <span>Готовность заказа: через 15 минут</span>
-                <a href={`tel:${storeConfig.phone}`} className="text-[#00E5FF] hover:underline flex items-center gap-1">
-                  <Phone className="w-3 h-3" /> Позвонить
-                </a>
+              {/* Pickup */}
+              <div className="p-6 rounded-2xl bg-[#0d0f14] border border-[#1c2030] space-y-5">
+                <div className="w-11 h-11 rounded-xl bg-[#16a34a]/12 text-[#16a34a] flex items-center justify-center">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-[#f1f3f7] mb-3">Самовывоз из магазина</h3>
+                  <ul className="space-y-2 text-[13px] text-[#8a95a8]">
+                    <li className="flex items-start gap-2">
+                      <span className="w-1 h-1 rounded-full bg-[#16a34a] mt-1.5 shrink-0" />
+                      <span><strong className="text-[#f1f3f7]">Бесплатно</strong> — в удобное время в часы работы</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1 h-1 rounded-full bg-[#16a34a] mt-1.5 shrink-0" />
+                      <span><strong className="text-[#f1f3f7]">Адрес:</strong> {storeConfig.address}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1 h-1 rounded-full bg-[#16a34a] mt-1.5 shrink-0" />
+                      <span><strong className="text-[#f1f3f7]">График:</strong> {storeConfig.workingHours.weekdays}, {storeConfig.workingHours.weekends}</span>
+                    </li>
+                  </ul>
+                </div>
+                <div className="pt-4 border-t border-[#1c2030] flex items-center justify-between text-[12px] text-[#56627a]">
+                  <span>Готовность заказа: 15 минут</span>
+                  <a href={`tel:${storeConfig.phone}`} className="text-[#2b7fff] hover:underline flex items-center gap-1">
+                    <Phone className="w-3 h-3" />
+                    Позвонить
+                  </a>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 8. ABOUT STORE */}
+      {/* ━━━ 8. ABOUT STORE ━━━ */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           <div className="space-y-5">
-            <span className="text-xs uppercase font-bold text-[#00E5FF] tracking-wider">
-              О магазине
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-bold text-white leading-tight">
-              SOGD MOBILE — технологии и комфорт для вашего устройства
+            <p className="section-label">О магазине</p>
+            <h2 className="text-2xl sm:text-4xl font-bold text-[#f1f3f7] leading-tight tracking-tight">
+              SOGD MOBILE — аксессуары в Худжанде
             </h2>
-            <div className="space-y-3.5 text-sm sm:text-base text-slate-400 leading-relaxed">
+            <div className="space-y-3.5 text-[14px] sm:text-base text-[#8a95a8] leading-relaxed">
               <p>
-                <strong>SOGD MOBILE</strong> — это специализированный магазин мобильных аксессуаров в городе Худжанд. Мы отбираем надежные чехлы, сертифицированные блоки питания, прочные бронестекла и качественные гаджеты для ведущих брендов: Apple, Samsung, Xiaomi, Honor, Huawei, Tecno и других.
+                <strong className="text-[#f1f3f7]">SOGD MOBILE</strong> — специализированный магазин
+                мобильных аксессуаров в городе Худжанд. Мы подбираем чехлы,
+                защитные стекла, сертифицированные зарядки и гаджеты для
+                популярных брендов: Apple, Samsung, Xiaomi, Honor, Huawei, Tecno
+                и других.
               </p>
               <p>
-                Мы стремимся дать жителям Согдийской области современный европейский уровень ритейла: удобный онлайн-каталог с актуальными остатками, профессиональную консультацию, быструю примерку в магазине и оперативную доставку до двери.
+                Удобный каталог с актуальными остатками, примерка в магазине и
+                доставка по Согдийской области.
               </p>
             </div>
-            <div className="pt-2">
-              <Link href="/about">
-                <Button variant="outline" size="md">
-                  Подробнее о нас
-                </Button>
-              </Link>
-            </div>
+            <Link
+              href="/about"
+              className="inline-flex items-center gap-2 h-10 px-5 border border-[#252d3d] hover:border-[#2b7fff]/50 text-[#8a95a8] hover:text-[#f1f3f7] text-[13px] font-medium rounded-xl transition-all"
+            >
+              Подробнее о нас
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
 
-          <div className="rounded-2xl border border-[#232A3B] overflow-hidden bg-[#131722] aspect-video sm:aspect-[4/3] relative">
+          <div className="rounded-2xl border border-[#1c2030] overflow-hidden aspect-video relative bg-[#0d0f14]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80"
               alt="Магазин SOGD MOBILE в Худжанде"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover opacity-75"
             />
           </div>
         </div>
       </section>
+
     </div>
   );
 }
