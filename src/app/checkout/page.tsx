@@ -69,13 +69,13 @@ export default function CheckoutPage() {
 
     try {
       const payload = {
-        customerName: data.customerName,
-        phone: data.phone,
-        messenger: data.messenger || null,
+        customerName: data.customerName.trim(),
+        phone: data.phone.trim(),
+        messenger: data.messenger ? data.messenger.trim() : null,
         deliveryType: data.deliveryType,
-        city: data.deliveryType === "DELIVERY" ? data.city : null,
-        address: data.deliveryType === "DELIVERY" ? data.address : null,
-        comment: data.comment || null,
+        city: data.deliveryType === "DELIVERY" ? data.city?.trim() || null : null,
+        address: data.deliveryType === "DELIVERY" ? data.address?.trim() || null : null,
+        comment: data.comment ? data.comment.trim() : null,
         items: items.map((i) => ({
           productId: i.productId,
           quantity: i.quantity,
@@ -91,9 +91,14 @@ export default function CheckoutPage() {
       const result = await res.json();
 
       if (!res.ok || !result.success) {
-        throw new Error(
-          result.message || "Не удалось оформить заказ. Попробуйте снова."
-        );
+        let msg = result.message || "Не удалось оформить заказ. Попробуйте снова.";
+        if (result.errors) {
+          const detail = Object.entries(result.errors)
+            .map(([field, errs]) => `${field}: ${(errs as string[]).join(", ")}`)
+            .join("; ");
+          msg = `${msg} (${detail})`;
+        }
+        throw new Error(msg);
       }
 
       // Clear local cart

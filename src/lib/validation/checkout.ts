@@ -10,10 +10,14 @@ export const checkoutFormSchema = z
     phone: z
       .string()
       .trim()
-      .min(9, { message: "Укажите корректный номер телефона (например: 920000000 или +992...)" })
-      .regex(/^(\+?992)?[0-9]{9}$/, {
-        message: "Номер должен содержать 9 цифр (например, 92 000 0000)",
-      }),
+      .min(7, { message: "Укажите номер телефона (минимум 7 цифр)" })
+      .refine(
+        (val) => {
+          const digits = val.replace(/\D/g, "");
+          return digits.length >= 7 && digits.length <= 15;
+        },
+        { message: "Укажите корректный номер телефона (например: +992 92 000 0000)" }
+      ),
     messenger: z.string().trim().optional(),
     deliveryType: z.enum(["DELIVERY", "PICKUP"]),
     city: z.string().trim().optional(),
@@ -43,13 +47,13 @@ export const checkoutFormSchema = z
 export type CheckoutFormData = z.infer<typeof checkoutFormSchema>;
 
 export const createOrderApiSchema = z.object({
-  customerName: z.string().min(2).max(100),
-  phone: z.string().min(9),
-  messenger: z.string().optional(),
+  customerName: z.string().min(1, { message: "Укажите имя" }).max(100),
+  phone: z.string().min(5, { message: "Укажите телефон" }).max(30),
+  messenger: z.string().nullable().optional(),
   deliveryType: z.enum(["DELIVERY", "PICKUP"]),
-  city: z.string().optional(),
-  address: z.string().optional(),
-  comment: z.string().optional(),
+  city: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
+  comment: z.string().nullable().optional(),
   items: z
     .array(
       z.object({
@@ -61,3 +65,4 @@ export const createOrderApiSchema = z.object({
 });
 
 export type CreateOrderApiInput = z.infer<typeof createOrderApiSchema>;
+
