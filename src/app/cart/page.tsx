@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Truck,
   RotateCcw,
+  Info
 } from "lucide-react";
 
 export default function CartPage() {
@@ -29,111 +30,114 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-20 text-center space-y-6">
-        <div className="w-20 h-20 rounded-full bg-[#131722] border border-[#232A3B] flex items-center justify-center text-slate-500 mx-auto">
+      <div className="max-w-3xl mx-auto px-4 py-24 text-center space-y-6">
+        <div className="w-24 h-24 rounded-full bg-[#111318] border border-[#1c2030] flex items-center justify-center text-[#56627a] mx-auto shadow-2xl">
           <ShoppingBag className="w-10 h-10" />
         </div>
-        <div className="space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">
-            Ваша корзина пока пуста
+        <div className="space-y-3">
+          <h1 className="text-3xl sm:text-4xl font-bold text-[#f1f3f7] tracking-tight">
+            Ваша корзина пуста
           </h1>
-          <p className="text-slate-400 text-sm max-w-md mx-auto">
-            В каталоге SOGD MOBILE вас ждут сотни качественных аксессуаров для смартфонов всех популярных брендов.
+          <p className="text-[#8a95a8] text-[15px] max-w-md mx-auto leading-relaxed">
+            В каталоге SOGD MOBILE вас ждут премиальные аксессуары для вашего устройства.
           </p>
         </div>
-        <Link href="/catalog">
-          <Button variant="primary" size="lg">
-            Перейти к покупкам
-          </Button>
-        </Link>
+        <div className="pt-4">
+          <Link href="/catalog">
+            <Button variant="primary" size="lg" className="px-8 shadow-[0_0_24px_-6px_var(--accent)]">
+              Перейти в каталог
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="flex items-center justify-between pb-6 border-b border-[#1a2030] mb-8">
+      <div className="flex items-end justify-between pb-6 border-b border-[#1c2030] mb-8">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-black text-white">
-            Корзина товаров
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-[#f1f3f7] tracking-tight">
+            Корзина
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Вы выбрали {items.reduce((acc, i) => acc + i.quantity, 0)} аксессуаров
+          <p className="text-[13px] text-[#56627a] mt-2">
+            Выбрано {items.reduce((acc, i) => acc + i.quantity, 0)} товаров
           </p>
         </div>
         <button
           onClick={clearCart}
-          className="text-xs text-slate-400 hover:text-red-400 transition-colors"
+          className="text-[12px] font-medium text-[#56627a] hover:text-[#e85454] transition-colors flex items-center gap-1.5"
         >
-          Очистить корзину
+          <Trash2 className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Очистить корзину</span>
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Cart Items List (8 cols) */}
-        <div className="lg:col-span-8 bg-[#0e121a] border border-[#1e2536] rounded-3xl p-6 divide-y divide-[#232A3B]/60 space-y-6">
+        {/* Cart Items List */}
+        <div className="lg:col-span-8 space-y-4">
           {items.map((item) => (
-            <div key={item.productId} className="pt-6 first:pt-0 flex flex-col sm:flex-row gap-5 items-start sm:items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-2xl bg-[#131722] border border-[#232A3B] overflow-hidden flex-shrink-0">
+            <div key={item.productId} className="glass-card p-4 sm:p-5 flex flex-col sm:flex-row gap-5 items-start sm:items-center justify-between group">
+              <div className="flex items-center gap-4 w-full sm:w-auto">
+                <div className="w-20 h-20 rounded-2xl bg-[#111318] border border-[#1c2030] overflow-hidden flex-shrink-0 relative">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={item.image}
                     alt={item.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
                   />
                 </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-[#00E5FF]">
+                <div className="flex-1">
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-[var(--accent-cyan)]">
                     {item.brand}
                   </span>
                   <Link
                     href={`/product/${item.slug}`}
-                    className="block font-semibold text-white hover:text-[#00E5FF] text-sm sm:text-base leading-snug line-clamp-2 mt-0.5"
+                    className="block font-bold text-[#f1f3f7] hover:text-[var(--accent-light)] text-[14px] sm:text-[15px] leading-snug line-clamp-2 mt-0.5"
                   >
                     {item.name}
                   </Link>
-                  <p className="text-xs text-slate-500 font-mono mt-1">
-                    Артикул: {item.sku}
+                  <p className="text-[11px] text-[#56627a] font-mono mt-1">
+                    SKU: {item.sku}
                   </p>
                 </div>
               </div>
 
               {/* Price and Quantity */}
-              <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-[#232A3B]">
+              <div className="flex items-center justify-between w-full sm:w-auto gap-6 sm:gap-8 pt-4 sm:pt-0 border-t border-[#1c2030] sm:border-0">
                 {/* Quantity Controls */}
-                <div className="flex items-center border border-[#232A3B] bg-[#131722] rounded-xl p-0.5">
+                <div className="flex items-center bg-[#111318] border border-[#1c2030] rounded-xl h-10 overflow-hidden">
                   <button
                     onClick={() => decrement(item.productId)}
-                    className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white rounded-lg hover:bg-white/5"
+                    className="w-9 h-full flex items-center justify-center text-[#8a95a8] hover:text-[#f1f3f7] hover:bg-[#181b22] transition-colors"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="w-8 text-center text-xs font-bold text-white">
+                  <span className="w-8 text-center text-[13px] font-bold text-[#f1f3f7]">
                     {item.quantity}
                   </span>
                   <button
                     onClick={() => increment(item.productId)}
                     disabled={item.quantity >= item.stock}
-                    className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white rounded-lg hover:bg-white/5 disabled:opacity-30"
+                    className="w-9 h-full flex items-center justify-center text-[#8a95a8] hover:text-[#f1f3f7] hover:bg-[#181b22] transition-colors disabled:opacity-30"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
-                {/* Subtotal for item */}
-                <div className="text-right min-w-[100px]">
-                  <p className="text-base font-bold text-white">
+                {/* Subtotal */}
+                <div className="text-right min-w-[90px]">
+                  <p className="text-[16px] font-extrabold text-[#f1f3f7]">
                     {formatPrice(item.price * item.quantity)}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-[11px] text-[#56627a] mt-0.5">
                     {formatPrice(item.price)} / шт.
                   </p>
                 </div>
 
                 <button
                   onClick={() => removeItem(item.productId)}
-                  className="text-slate-500 hover:text-red-400 p-2 transition-colors"
+                  className="text-[#3a4356] hover:text-[#e85454] p-2 transition-colors -mr-2"
                   aria-label="Удалить"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -143,64 +147,68 @@ export default function CartPage() {
           ))}
         </div>
 
-        {/* Order Summary & Proceed to Checkout (4 cols) */}
-        <div className="lg:col-span-4 bg-[#0e121a] border border-[#1e2536] rounded-3xl p-6 space-y-6 sticky top-24">
-          <h2 className="text-lg font-bold text-white pb-3 border-b border-[#232A3B]">
-            Детали заказа
+        {/* Order Summary */}
+        <div className="lg:col-span-4 glass-card p-6 space-y-6 sticky top-24">
+          <h2 className="text-[18px] font-extrabold text-[#f1f3f7] tracking-tight pb-4 border-b border-[#1c2030]">
+            Ваш заказ
           </h2>
 
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between text-slate-400">
-              <span>Сумма товаров:</span>
-              <span className="text-white font-medium">
+          <div className="space-y-4">
+            <div className="flex justify-between text-[14px]">
+              <span className="text-[#8a95a8]">Сумма товаров:</span>
+              <span className="text-[#f1f3f7] font-semibold">
                 {formatPrice(subtotal)}
               </span>
             </div>
 
-            <div className="flex justify-between text-slate-400 text-xs">
-              <span>Доставка по Худжанду:</span>
-              <span className="text-emerald-400 font-semibold">
+            <div className="flex justify-between text-[14px]">
+              <span className="text-[#8a95a8]">Доставка:</span>
+              <span className="text-[#16a34a] font-bold">
                 {isFreeDelivery ? "Бесплатно" : formatPrice(deliveryCost)}
               </span>
             </div>
 
             {!isFreeDelivery && (
-              <div className="p-2.5 rounded-xl bg-[#131722] border border-[#232A3B] text-[11px] text-slate-400">
-                Добавьте товаров еще на{" "}
-                <strong className="text-[#00E5FF]">
-                  {formatPrice(freeThreshold - subtotal)}
-                </strong>{" "}
-                для бесплатной доставки по городу!
+              <div className="p-3 rounded-xl bg-[#111318] border border-[#1c2030] text-[12px] text-[#8a95a8] leading-relaxed">
+                Добавьте товаров на <strong className="text-[var(--accent-cyan)] font-bold">{formatPrice(freeThreshold - subtotal)}</strong> для бесплатной доставки!
               </div>
             )}
 
-            <div className="flex justify-between text-lg font-bold text-white pt-4 border-t border-[#232A3B]">
-              <span>Всего к оплате:</span>
-              <span className="text-2xl text-[#00E5FF] font-black">
+            <div className="flex justify-between items-end pt-4 border-t border-[#1c2030]">
+              <span className="text-[14px] font-bold text-[#8a95a8]">Итого к оплате:</span>
+              <span className="text-3xl font-black text-[#f1f3f7] tracking-tight">
                 {formatPrice(total)}
               </span>
             </div>
           </div>
 
           <Link href="/checkout" className="block w-full">
-            <Button variant="primary" size="lg" className="w-full justify-between">
-              <span>Перейти к оформлению</span>
+            <Button variant="primary" size="lg" className="w-full justify-between h-14 text-[15px] shadow-[0_0_24px_-6px_var(--accent)] hover:shadow-[0_0_32px_-4px_var(--accent)]">
+              <span>Оформить заказ</span>
               <ArrowRight className="w-5 h-5" />
             </Button>
           </Link>
 
-          <div className="pt-4 border-t border-[#232A3B] space-y-2.5 text-xs text-slate-400">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-              <span>Оплата при получении (наличными или перевод)</span>
+          <div className="p-3 bg-[#181b22] border border-[#252d3d] rounded-xl flex items-start gap-2.5 mt-2">
+            <Info className="w-4 h-4 text-[var(--accent-cyan)] shrink-0 mt-0.5" />
+            <p className="text-[11px] text-[#8a95a8] leading-relaxed">
+              <strong className="text-[#f1f3f7] block mb-0.5">Доступна рассрочка</strong>
+              Можно приобрести товары в рассрочку через банк-партнёр. Спросите у оператора при подтверждении заказа.
+            </p>
+          </div>
+
+          <div className="pt-2 space-y-3 text-[12px] text-[#56627a]">
+            <div className="flex items-center gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-[#16a34a] shrink-0" />
+              <span>Безопасная оплата при получении</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Truck className="w-4 h-4 text-[#00E5FF] flex-shrink-0" />
-              <span>Быстрая курьерская доставка по Худжанду</span>
+            <div className="flex items-center gap-2.5">
+              <Truck className="w-4 h-4 text-[var(--accent-cyan)] shrink-0" />
+              <span>Быстрая доставка по Худжанду</span>
             </div>
-            <div className="flex items-center gap-2">
-              <RotateCcw className="w-4 h-4 text-[#0070F3] flex-shrink-0" />
-              <span>Бесплатный самовывоз из ТЦ «Худжанд Плаза»</span>
+            <div className="flex items-center gap-2.5">
+              <RotateCcw className="w-4 h-4 text-[var(--accent)] shrink-0" />
+              <span>Бесплатный самовывоз из магазина</span>
             </div>
           </div>
         </div>

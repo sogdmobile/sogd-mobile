@@ -100,6 +100,9 @@ export interface ProductFilterOptions {
   sort?: string;
   search?: string;
   take?: number;
+  material?: string;
+  color?: string;
+  capacity?: string;
 }
 
 // 2. Get products with filters and search
@@ -143,22 +146,28 @@ export async function getProducts(options: ProductFilterOptions = {}): Promise<P
     if (options.model && options.model.trim()) {
       where.compatibleModels = { contains: options.model.trim() };
     }
+    
+    // SQLite JSON filtering is complex with Prisma stringified fields, 
+    // we'll rely on in-memory fallback for these advanced filters if they are passed.
+    const needInMemorySpecs = Boolean(options.material || options.capacity || options.color);
+    
+    if (!needInMemorySpecs) {
+      let orderBy: any = { createdAt: "desc" };
+      if (options.sort === "popular") orderBy = { isPopular: "desc" };
+      else if (options.sort === "new") orderBy = { isNew: "desc" };
+      else if (options.sort === "price_asc") orderBy = { price: "asc" };
+      else if (options.sort === "price_desc") orderBy = { price: "desc" };
 
-    let orderBy: any = { createdAt: "desc" };
-    if (options.sort === "popular") orderBy = { isPopular: "desc" };
-    else if (options.sort === "new") orderBy = { isNew: "desc" };
-    else if (options.sort === "price_asc") orderBy = { price: "asc" };
-    else if (options.sort === "price_desc") orderBy = { price: "desc" };
+      const dbProducts = await db.product.findMany({
+        where,
+        orderBy,
+        take: options.take,
+        include: { category: true },
+      });
 
-    const dbProducts = await db.product.findMany({
-      where,
-      orderBy,
-      take: options.take,
-      include: { category: true },
-    });
-
-    if (dbProducts && dbProducts.length > 0) {
-      return dbProducts.map(formatProductDTO);
+      if (dbProducts && dbProducts.length > 0) {
+        return dbProducts.map(formatProductDTO);
+      }
     }
   } catch (err) {
     console.warn("Database fetch failed for products, using embedded fallback data:", err);
@@ -207,6 +216,27 @@ export async function getProducts(options: ProductFilterOptions = {}): Promise<P
     list = list.filter((p) =>
       p.compatibleModels.some((mod) => mod.toLowerCase().includes(m))
     );
+  }
+  
+  if (options.color) {
+    const c = options.color.toLowerCase();
+    list = list.filter((p) => p.color?.toLowerCase().includes(c));
+  }
+  
+  if (options.material) {
+    const m = options.material.toLowerCase();
+    list = list.filter((p) => {
+      const spec = typeof p.specifications === 'string' ? JSON.parse(p.specifications) : p.specifications;
+      return spec && spec['Материал'] && spec['Материал'].toLowerCase().includes(m);
+    });
+  }
+  
+  if (options.capacity) {
+    const c = options.capacity.toLowerCase();
+    list = list.filter((p) => {
+      const spec = typeof p.specifications === 'string' ? JSON.parse(p.specifications) : p.specifications;
+      return spec && spec['Емкость'] && spec['Емкость'].toLowerCase().includes(c);
+    });
   }
 
   // Sort

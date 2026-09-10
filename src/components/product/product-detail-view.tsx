@@ -19,6 +19,7 @@ import {
   MessageCircle,
   Send,
 } from "lucide-react";
+import { PHONE_BRANDS } from "@/data/phone-brands";
 
 interface ProductDetailViewProps {
   product: ProductDTO;
@@ -35,6 +36,9 @@ export function ProductDetailView({
   );
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const [compatBrand, setCompatBrand] = useState("");
+  const [compatModel, setCompatModel] = useState("");
+  const [compatResult, setCompatResult] = useState<"yes" | "no" | null>(null);
 
   const addItem = useCartStore((s) => s.addItem);
 
@@ -64,7 +68,7 @@ export function ProductDetailView({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32 lg:pb-8 space-y-16">
 
       {/* ── 1. Breadcrumb ── */}
       <nav aria-label="Навигация по разделам" className="flex items-center gap-1.5 text-[11px] text-[#56627a] flex-wrap">
@@ -188,21 +192,69 @@ export function ProductDetailView({
 
           {/* Compatible models */}
           {product.compatibleModels.length > 0 && (
-            <div className="space-y-2">
-              <span className="text-[11px] font-semibold text-[#56627a] uppercase tracking-wider flex items-center gap-1.5">
-                <Smartphone className="w-3.5 h-3.5 text-[#00d4ff]" />
-                Совместимость:
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {product.compatibleModels.map((mod) => (
-                  <span
-                    key={mod}
-                    className="px-2.5 py-1 rounded-lg bg-[#111318] border border-[#1c2030] text-[11px] text-[#8a95a8] font-medium"
-                  >
-                    {mod}
-                  </span>
-                ))}
+            <div className="space-y-4 bg-[#111318] border border-[#1c2030] p-5 rounded-2xl">
+              <div className="flex items-center gap-2">
+                <Smartphone className="w-5 h-5 text-[#2b7fff]" />
+                <h3 className="font-bold text-[#f1f3f7] text-[14px]">Подходит ли это вашему телефону?</h3>
               </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <select
+                  value={compatBrand}
+                  onChange={(e) => {
+                    setCompatBrand(e.target.value);
+                    setCompatModel("");
+                    setCompatResult(null);
+                  }}
+                  className="flex-1 bg-[#181b22] border border-[#252d3d] rounded-xl px-3 py-2.5 text-[13px] text-[#f1f3f7] focus:border-[#2b7fff] focus:outline-none"
+                >
+                  <option value="">Выберите бренд...</option>
+                  {PHONE_BRANDS.map((b) => (
+                    <option key={b.slug} value={b.slug}>{b.name}</option>
+                  ))}
+                </select>
+                <select
+                  value={compatModel}
+                  onChange={(e) => {
+                    setCompatModel(e.target.value);
+                    setCompatResult(null);
+                  }}
+                  disabled={!compatBrand}
+                  className="flex-1 bg-[#181b22] border border-[#252d3d] rounded-xl px-3 py-2.5 text-[13px] text-[#f1f3f7] focus:border-[#2b7fff] focus:outline-none disabled:opacity-50"
+                >
+                  <option value="">Выберите модель...</option>
+                  {compatBrand &&
+                    PHONE_BRANDS.find((b) => b.slug === compatBrand)?.models.map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                </select>
+                <Button
+                  onClick={() => {
+                    if (!compatModel) return;
+                    const isCompatible = product.compatibleModels.some(
+                      (m) => m.toLowerCase() === compatModel.toLowerCase()
+                    );
+                    setCompatResult(isCompatible ? "yes" : "no");
+                  }}
+                  disabled={!compatModel}
+                  variant="primary"
+                  className="px-6 h-11 sm:h-auto"
+                >
+                  Проверить
+                </Button>
+              </div>
+
+              {compatResult === "yes" && (
+                <div className="flex items-center gap-2 text-[#16a34a] bg-[#16a34a]/10 p-3 rounded-xl border border-[#16a34a]/20">
+                  <Check className="w-5 h-5" />
+                  <span className="text-[13px] font-medium">Да, отлично подходит к {compatModel}!</span>
+                </div>
+              )}
+              {compatResult === "no" && (
+                <div className="flex items-center gap-2 text-[#e85454] bg-[#e85454]/10 p-3 rounded-xl border border-[#e85454]/20">
+                  <span className="w-5 h-5 flex items-center justify-center font-bold">✕</span>
+                  <span className="text-[13px] font-medium">К сожалению, не подходит к {compatModel}.</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -376,6 +428,31 @@ export function ProductDetailView({
           </div>
         </div>
       )}
+
+      {/* ── 5. Sticky Mobile CTA ── */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-[#0d0f14]/80 backdrop-blur-md border-t border-[#1c2030] z-40 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <Button
+          onClick={handleAddToCart}
+          disabled={product.stock <= 0}
+          variant="primary"
+          size="lg"
+          className={`w-full h-12 font-semibold transition-all ${
+            added ? "!bg-[#16a34a] hover:!bg-[#15803d]" : "shadow-[0_4px_24px_-4px_rgba(43,127,255,0.4)]"
+          }`}
+        >
+          {added ? (
+            <span className="flex items-center gap-2">
+              <Check className="w-5 h-5" />
+              Добавлено
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <ShoppingBag className="w-5 h-5" />
+              {product.stock > 0 ? `В корзину — ${formatPrice(product.price * quantity)}` : "Нет в наличии"}
+            </span>
+          )}
+        </Button>
+      </div>
     </div>
   );
 }

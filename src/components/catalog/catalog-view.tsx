@@ -80,7 +80,9 @@ export function CatalogView({
   const hasActiveFilters =
     Boolean(currentCategory) || Boolean(currentBrand) || Boolean(currentModel) ||
     Boolean(currentMinPrice) || Boolean(currentMaxPrice) || currentInStock ||
-    Boolean(currentSearch) || currentSale;
+    Boolean(currentSearch) || currentSale ||
+    Boolean(searchParams.get("material")) || Boolean(searchParams.get("color")) ||
+    Boolean(searchParams.get("capacity"));
 
   // Models for current brand, if one is selected
   const modelsForBrand = currentBrand
@@ -228,7 +230,80 @@ export function CatalogView({
         )}
       </div>
 
-      {/* Price */}
+      {/* ── Contextual Filters ── */}
+      {currentCategory === "cases" && (
+        <>
+          <div className="border-t border-[#1c2030] pt-4">
+            <h3 className="font-bold text-[#f1f3f7] text-[10px] uppercase tracking-widest mb-2.5">
+              Материал
+            </h3>
+            <div className="flex flex-col gap-1.5">
+              {["Силикон", "Кожа", "Пластик", "Карбон", "ТПУ"].map((mat) => {
+                const currentMaterial = searchParams.get("material");
+                return (
+                  <label key={mat} className="flex items-center gap-2.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={currentMaterial === mat}
+                      onChange={(e) => updateFilters({ material: e.target.checked ? mat : null })}
+                      className="w-4 h-4 rounded border-[#252d3d] bg-[#111318] text-[var(--accent)] focus:ring-[var(--accent)]/25 accent-[var(--accent)]"
+                    />
+                    <span className="text-[12px] text-[#8a95a8]">{mat}</span>
+                  </label>
+                )
+              })}
+            </div>
+          </div>
+          <div className="border-t border-[#1c2030] pt-4">
+            <h3 className="font-bold text-[#f1f3f7] text-[10px] uppercase tracking-widest mb-2.5">
+              Цвет
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {["Черный", "Прозрачный", "Синий", "Красный", "Зеленый", "Белый"].map((col) => {
+                const currentColor = searchParams.get("color");
+                return (
+                  <button
+                    key={col}
+                    onClick={() => updateFilters({ color: currentColor === col ? null : col })}
+                    className={`px-2.5 py-1.5 rounded-xl text-[11px] font-medium transition-all border ${
+                      currentColor === col
+                        ? "bg-[var(--accent)] border-[var(--accent)] text-white"
+                        : "bg-[#111318] border-[#1c2030] text-[#8a95a8] hover:text-[#f1f3f7] hover:border-[#252d3d]"
+                    }`}
+                  >
+                    {col}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </>
+      )}
+
+      {currentCategory === "power-banks" && (
+        <div className="border-t border-[#1c2030] pt-4">
+          <h3 className="font-bold text-[#f1f3f7] text-[10px] uppercase tracking-widest mb-2.5">
+            Емкость
+          </h3>
+          <div className="flex flex-col gap-1.5">
+            {["10000 mAh", "20000 mAh", "30000 mAh", "40000 mAh"].map((cap) => {
+              const currentCap = searchParams.get("capacity");
+              return (
+                <label key={cap} className="flex items-center gap-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={currentCap === cap}
+                    onChange={(e) => updateFilters({ capacity: e.target.checked ? cap : null })}
+                    className="w-4 h-4 rounded border-[#252d3d] bg-[#111318] text-[var(--accent)] focus:ring-[var(--accent)]/25 accent-[var(--accent)]"
+                  />
+                  <span className="text-[12px] text-[#8a95a8]">{cap}</span>
+                </label>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="border-t border-[#1c2030] pt-4">
         <h3 className="font-bold text-[#f1f3f7] text-[10px] uppercase tracking-widest mb-2.5">
           Цена (сомони)
@@ -409,6 +484,24 @@ export function CatalogView({
             <span className="inline-flex items-center gap-1 bg-[#e85454]/10 border border-[#e85454]/25 text-[11px] text-[#e85454] px-2.5 py-1 rounded-lg">
               Скидки
               <button onClick={() => updateFilters({ sale: null })} className="text-[#e85454]/60 hover:text-white"><X className="w-3 h-3" /></button>
+            </span>
+          )}
+          {searchParams.get("material") && (
+            <span className="inline-flex items-center gap-1 bg-[#111318] border border-[#1c2030] text-[11px] text-[#8a95a8] px-2.5 py-1 rounded-lg">
+              {searchParams.get("material")}
+              <button onClick={() => updateFilters({ material: null })} className="text-[#56627a] hover:text-[#f1f3f7]"><X className="w-3 h-3" /></button>
+            </span>
+          )}
+          {searchParams.get("color") && (
+            <span className="inline-flex items-center gap-1 bg-[#111318] border border-[#1c2030] text-[11px] text-[#8a95a8] px-2.5 py-1 rounded-lg">
+              {searchParams.get("color")}
+              <button onClick={() => updateFilters({ color: null })} className="text-[#56627a] hover:text-[#f1f3f7]"><X className="w-3 h-3" /></button>
+            </span>
+          )}
+          {searchParams.get("capacity") && (
+            <span className="inline-flex items-center gap-1 bg-[#111318] border border-[#1c2030] text-[11px] text-[#8a95a8] px-2.5 py-1 rounded-lg">
+              {searchParams.get("capacity")}
+              <button onClick={() => updateFilters({ capacity: null })} className="text-[#56627a] hover:text-[#f1f3f7]"><X className="w-3 h-3" /></button>
             </span>
           )}
           {hasActiveFilters && (

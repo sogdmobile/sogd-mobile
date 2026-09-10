@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   AlertCircle,
   ShoppingBag,
+  Info
 } from "lucide-react";
 
 export default function CheckoutPage() {
@@ -151,19 +152,21 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-20 text-center space-y-5">
-        <div className="w-16 h-16 rounded-full bg-[#131722] border border-[#232A3B] flex items-center justify-center text-slate-500 mx-auto">
-          <ShoppingBag className="w-8 h-8" />
+      <div className="max-w-xl mx-auto px-4 py-24 text-center space-y-6">
+        <div className="w-24 h-24 rounded-full bg-[#111318] border border-[#1c2030] flex items-center justify-center text-[#56627a] mx-auto shadow-2xl">
+          <ShoppingBag className="w-10 h-10" />
         </div>
-        <h1 className="text-2xl font-bold text-white">В корзине нет товаров</h1>
-        <p className="text-sm text-slate-400">
+        <h1 className="text-3xl font-extrabold text-[#f1f3f7] tracking-tight">Корзина пуста</h1>
+        <p className="text-[15px] text-[#8a95a8]">
           Для оформления заказа перейдите в каталог и добавьте нужные товары.
         </p>
-        <Link href="/catalog">
-          <Button variant="primary" size="md">
-            Перейти в каталог
-          </Button>
-        </Link>
+        <div className="pt-4">
+          <Link href="/catalog">
+            <Button variant="primary" size="lg" className="px-8 shadow-[0_0_24px_-6px_var(--accent)]">
+              Перейти в каталог
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -171,35 +174,35 @@ export default function CheckoutPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="max-w-3xl mb-8">
-        <h1 className="text-3xl sm:text-4xl font-black text-white">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#f1f3f7] tracking-tight">
           Оформление заказа
         </h1>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1">
-          Быстрое оформление без обязательной регистрации. Оплата при получении.
+        <p className="text-[13px] text-[#56627a] mt-2">
+          Быстрое оформление без регистрации. Безопасная оплата при получении.
         </p>
       </div>
 
       {serverError && (
-        <div className="mb-8 p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-300 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+        <div className="mb-8 p-4 rounded-2xl bg-[#e85454]/10 border border-[#e85454]/30 text-[#e85454] flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <div>
-            <h4 className="text-sm font-bold text-red-300">Внимание</h4>
-            <p className="text-xs text-red-400/90 mt-0.5">{serverError}</p>
+            <h4 className="text-[14px] font-bold">Внимание</h4>
+            <p className="text-[12px] opacity-90 mt-0.5">{serverError}</p>
           </div>
         </div>
       )}
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-          {/* Left Column: Form Details (7 cols) */}
-          <div className="lg:col-span-7 space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Column: Form Details */}
+          <div className="lg:col-span-7 space-y-6">
             {/* Step 1: Contact Information */}
-            <div className="bg-[#0e121a] border border-[#1e2536] rounded-3xl p-6 sm:p-8 space-y-5">
-              <div className="flex items-center gap-2.5 pb-4 border-b border-[#232A3B]">
-                <div className="w-8 h-8 rounded-lg bg-[#0070F3]/15 text-[#00E5FF] flex items-center justify-center font-bold text-sm">
+            <div className="glass-card p-6 sm:p-8 space-y-6">
+              <div className="flex items-center gap-3 pb-4 border-b border-[#1c2030]">
+                <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/15 text-[var(--accent)] flex items-center justify-center font-extrabold text-[15px]">
                   1
                 </div>
-                <h2 className="text-lg font-bold text-white">
+                <h2 className="text-[18px] font-extrabold text-[#f1f3f7]">
                   Контактные данные
                 </h2>
               </div>
@@ -224,8 +227,8 @@ export default function CheckoutPage() {
 
                 <Input
                   id="messenger"
-                  label="Telegram / WhatsApp (для подтверждения и чека)"
-                  placeholder="@username или номер в мессенджере"
+                  label="Telegram / WhatsApp (по желанию)"
+                  placeholder="@username или номер"
                   {...register("messenger")}
                   error={errors.messenger?.message}
                 />
@@ -233,72 +236,72 @@ export default function CheckoutPage() {
             </div>
 
             {/* Step 2: Delivery Method */}
-            <div className="bg-[#0e121a] border border-[#1e2536] rounded-3xl p-6 sm:p-8 space-y-5">
-              <div className="flex items-center gap-2.5 pb-4 border-b border-[#232A3B]">
-                <div className="w-8 h-8 rounded-lg bg-[#0070F3]/15 text-[#00E5FF] flex items-center justify-center font-bold text-sm">
+            <div className="glass-card p-6 sm:p-8 space-y-6">
+              <div className="flex items-center gap-3 pb-4 border-b border-[#1c2030]">
+                <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/15 text-[var(--accent)] flex items-center justify-center font-extrabold text-[15px]">
                   2
                 </div>
-                <h2 className="text-lg font-bold text-white">Способ получения</h2>
+                <h2 className="text-[18px] font-extrabold text-[#f1f3f7]">Способ получения</h2>
               </div>
 
               {/* Delivery / Pickup Toggles */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label
                   onClick={() => setValue("deliveryType", "DELIVERY")}
-                  className={`flex flex-col justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
+                  className={`flex flex-col justify-between p-5 rounded-2xl border cursor-pointer transition-all ${
                     deliveryType === "DELIVERY"
-                      ? "bg-[#131722] border-[#0070F3] shadow-md shadow-[#0070F3]/15"
-                      : "bg-[#0b0d12] border-[#232A3B] opacity-70 hover:opacity-100"
+                      ? "bg-[#111318] border-[var(--accent)] shadow-[0_0_24px_-6px_var(--accent)]"
+                      : "bg-[#0d0f14] border-[#1c2030] hover:border-[#252d3d]"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2 text-white font-semibold text-sm">
-                      <Truck className="w-4 h-4 text-[#00E5FF]" />
+                    <div className="flex items-center gap-2 text-[#f1f3f7] font-bold text-[14px]">
+                      <Truck className="w-4 h-4 text-[var(--accent)]" />
                       <span>Курьерская доставка</span>
                     </div>
                     <div
-                      className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                      className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${
                         deliveryType === "DELIVERY"
-                          ? "border-[#0070F3] bg-[#0070F3]"
-                          : "border-slate-600"
+                          ? "border-[var(--accent)] bg-[var(--accent)]"
+                          : "border-[#3a4356]"
                       }`}
                     >
                       {deliveryType === "DELIVERY" && (
-                        <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                        <div className="w-2 h-2 rounded-full bg-[#111318]" />
                       )}
                     </div>
                   </div>
-                  <p className="text-xs text-slate-400">
-                    По Худжанду за 1–3 часа. {isFree ? "Бесплатно!" : `${storeConfig.delivery.inCityCost} сомони`}
+                  <p className="text-[12px] text-[#8a95a8]">
+                    По Худжанду за 1–3 часа. <strong className="text-[var(--accent-cyan)]">{isFree ? "Бесплатно!" : `${storeConfig.delivery.inCityCost} сомони`}</strong>
                   </p>
                 </label>
 
                 <label
                   onClick={() => setValue("deliveryType", "PICKUP")}
-                  className={`flex flex-col justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
+                  className={`flex flex-col justify-between p-5 rounded-2xl border cursor-pointer transition-all ${
                     deliveryType === "PICKUP"
-                      ? "bg-[#131722] border-[#0070F3] shadow-md shadow-[#0070F3]/15"
-                      : "bg-[#0b0d12] border-[#232A3B] opacity-70 hover:opacity-100"
+                      ? "bg-[#111318] border-[var(--accent)] shadow-[0_0_24px_-6px_var(--accent)]"
+                      : "bg-[#0d0f14] border-[#1c2030] hover:border-[#252d3d]"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2 text-white font-semibold text-sm">
-                      <MapPin className="w-4 h-4 text-emerald-400" />
+                    <div className="flex items-center gap-2 text-[#f1f3f7] font-bold text-[14px]">
+                      <MapPin className="w-4 h-4 text-[#16a34a]" />
                       <span>Самовывоз (Бесплатно)</span>
                     </div>
                     <div
-                      className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                      className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${
                         deliveryType === "PICKUP"
-                          ? "border-[#0070F3] bg-[#0070F3]"
-                          : "border-slate-600"
+                          ? "border-[var(--accent)] bg-[var(--accent)]"
+                          : "border-[#3a4356]"
                       }`}
                     >
                       {deliveryType === "PICKUP" && (
-                        <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                        <div className="w-2 h-2 rounded-full bg-[#111318]" />
                       )}
                     </div>
                   </div>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-[12px] text-[#8a95a8]">
                     ТЦ «Худжанд Плаза», 1 этаж (09:00 - 20:00)
                   </p>
                 </label>
@@ -306,28 +309,28 @@ export default function CheckoutPage() {
 
               {/* Conditional address fields if delivery is selected */}
               {deliveryType === "DELIVERY" ? (
-                <div className="space-y-4 pt-3">
+                <div className="space-y-4 pt-2">
                   <Input
                     id="city"
                     label="Город / Населенный пункт *"
-                    placeholder="Худжанд (или Б.Гафуров, Канибадам...)"
+                    placeholder="Худжанд"
                     {...register("city")}
                     error={errors.city?.message}
                   />
 
                   <Input
                     id="address"
-                    label="Адрес доставки (улица, дом, ориентир) *"
-                    placeholder="пр. И. Сомони, д. 12, кв. 45 (возле театра Камоли)"
+                    label="Адрес доставки *"
+                    placeholder="улица, дом, ориентир..."
                     {...register("address")}
                     error={errors.address?.message}
                   />
                 </div>
               ) : (
-                <div className="p-4 rounded-2xl bg-[#131722] border border-[#232A3B] text-xs text-slate-300 space-y-2">
-                  <p className="font-semibold text-white">Адрес пункта выдачи:</p>
-                  <p className="text-slate-400">{storeConfig.address}</p>
-                  <p className="text-[#00E5FF]">Заказ будет собран и готов к выдаче через 15 минут.</p>
+                <div className="p-4 rounded-2xl bg-[#111318] border border-[#1c2030] text-[13px] text-[#8a95a8] space-y-1.5 mt-2">
+                  <p className="font-bold text-[#f1f3f7]">Адрес пункта выдачи:</p>
+                  <p>{storeConfig.address}</p>
+                  <p className="text-[var(--accent-cyan)] font-medium pt-1">Заказ будет готов к выдаче через 15 минут.</p>
                 </div>
               )}
 
@@ -335,55 +338,55 @@ export default function CheckoutPage() {
               <div className="pt-2">
                 <label
                   htmlFor="comment"
-                  className="block text-xs font-medium text-slate-300 mb-1.5"
+                  className="block text-[13px] font-semibold text-[#8a95a8] mb-2 uppercase tracking-wider"
                 >
-                  Комментарий к заказу (по желанию)
+                  Комментарий (опционально)
                 </label>
                 <textarea
                   id="comment"
                   rows={2}
-                  placeholder="Например: удобное время доставки, код домофона, модель телефона..."
+                  placeholder="Дополнительные пожелания к заказу..."
                   {...register("comment")}
-                  className="w-full bg-[#131722] border border-[#232A3B] rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#0070F3]"
+                  className="w-full bg-[#0d0f14] border border-[#1c2030] rounded-xl px-4 py-3 text-[14px] text-[#f1f3f7] placeholder-[#3a4356] focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]/25 transition-all"
                 />
               </div>
             </div>
 
             {/* Step 3: Payment Method */}
-            <div className="bg-[#0e121a] border border-[#1e2536] rounded-3xl p-6 sm:p-8 space-y-4">
-              <div className="flex items-center gap-2.5 pb-4 border-b border-[#232A3B]">
-                <div className="w-8 h-8 rounded-lg bg-[#0070F3]/15 text-[#00E5FF] flex items-center justify-center font-bold text-sm">
+            <div className="glass-card p-6 sm:p-8 space-y-4">
+              <div className="flex items-center gap-3 pb-4 border-b border-[#1c2030]">
+                <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/15 text-[var(--accent)] flex items-center justify-center font-extrabold text-[15px]">
                   3
                 </div>
-                <h2 className="text-lg font-bold text-white">Способ оплаты</h2>
+                <h2 className="text-[18px] font-extrabold text-[#f1f3f7]">Способ оплаты</h2>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#131722] border border-emerald-500/30 flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+              <div className="p-5 rounded-2xl bg-[#16a34a]/5 border border-[#16a34a]/20 flex items-start gap-4">
+                <ShieldCheck className="w-6 h-6 text-[#16a34a] flex-shrink-0" />
                 <div>
-                  <h4 className="text-sm font-bold text-white">
-                    Оплата при получении (наличными или перевод)
+                  <h4 className="text-[15px] font-bold text-[#16a34a]">
+                    Оплата при получении
                   </h4>
-                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                    Вы оплачиваете заказ только после личной проверки товара при получении у курьера или в магазине.
+                  <p className="text-[13px] text-[#8a95a8] mt-1.5 leading-relaxed">
+                    Вы оплачиваете заказ только после проверки товара (наличными или переводом на карту).
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Order Summary (5 cols) */}
-          <div className="lg:col-span-5 bg-[#0e121a] border border-[#1e2536] rounded-3xl p-6 sm:p-8 space-y-6 sticky top-24">
-            <h3 className="text-lg font-bold text-white pb-3 border-b border-[#232A3B]">
-              Ваш заказ ({items.reduce((acc, i) => acc + i.quantity, 0)})
+          {/* Right Column: Order Summary */}
+          <div className="lg:col-span-5 glass-card p-6 sm:p-8 space-y-6 sticky top-24">
+            <h3 className="text-[18px] font-extrabold text-[#f1f3f7] pb-4 border-b border-[#1c2030]">
+              Детали заказа
             </h3>
 
             {/* Items mini list */}
-            <div className="max-h-64 overflow-y-auto space-y-3 divide-y divide-[#232A3B]/40 pr-1">
+            <div className="max-h-[30vh] overflow-y-auto space-y-4 pr-2 scrollbar-none">
               {items.map((item) => (
-                <div key={item.productId} className="pt-3 first:pt-0 flex items-center justify-between gap-3 text-xs">
+                <div key={item.productId} className="flex items-center justify-between gap-3 text-[13px]">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-[#131722] border border-[#232A3B] overflow-hidden flex-shrink-0">
+                    <div className="w-14 h-14 rounded-xl bg-[#111318] border border-[#1c2030] overflow-hidden flex-shrink-0">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={item.image}
@@ -392,15 +395,15 @@ export default function CheckoutPage() {
                       />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-white line-clamp-1">
+                      <h4 className="font-bold text-[#f1f3f7] line-clamp-1 max-w-[150px]">
                         {item.name}
                       </h4>
-                      <p className="text-slate-500">
+                      <p className="text-[#8a95a8] mt-0.5">
                         {item.quantity} × {formatPrice(item.price)}
                       </p>
                     </div>
                   </div>
-                  <span className="font-bold text-slate-200">
+                  <span className="font-extrabold text-[#f1f3f7]">
                     {formatPrice(item.price * item.quantity)}
                   </span>
                 </div>
@@ -408,24 +411,33 @@ export default function CheckoutPage() {
             </div>
 
             {/* Calculations */}
-            <div className="pt-4 border-t border-[#232A3B] space-y-2 text-xs sm:text-sm">
-              <div className="flex justify-between text-slate-400">
+            <div className="pt-5 border-t border-[#1c2030] space-y-3 text-[14px]">
+              <div className="flex justify-between text-[#8a95a8]">
                 <span>Сумма товаров:</span>
-                <span className="text-white font-medium">{formatPrice(subtotal)}</span>
+                <span className="text-[#f1f3f7] font-semibold">{formatPrice(subtotal)}</span>
               </div>
-              <div className="flex justify-between text-slate-400">
+              <div className="flex justify-between text-[#8a95a8]">
                 <span>Доставка:</span>
-                <span className="text-emerald-400 font-semibold">
+                <span className="text-[#16a34a] font-bold">
                   {deliveryType === "PICKUP"
-                    ? "Бесплатно (Самовывоз)"
+                    ? "Самовывоз"
                     : isFree
                     ? "Бесплатно"
                     : formatPrice(deliveryCost)}
                 </span>
               </div>
-              <div className="flex justify-between text-base sm:text-lg font-black text-white pt-3 border-t border-[#232A3B]">
-                <span>Итого к оплате:</span>
-                <span className="text-2xl text-[#00E5FF] font-black">
+              
+              <div className="p-3 bg-[#181b22] border border-[#252d3d] rounded-xl flex items-start gap-2.5 mt-2">
+                <Info className="w-4 h-4 text-[var(--accent-cyan)] shrink-0 mt-0.5" />
+                <p className="text-[11px] text-[#8a95a8] leading-relaxed">
+                  <strong className="text-[#f1f3f7] block mb-0.5">Доступна рассрочка</strong>
+                  Рассрочка оформляется при получении через банк-партнёр. Спросите у оператора при подтверждении заказа.
+                </p>
+              </div>
+
+              <div className="flex justify-between items-end pt-5 border-t border-[#1c2030]">
+                <span className="font-bold text-[#8a95a8]">Итого:</span>
+                <span className="text-3xl text-[var(--accent)] font-black tracking-tight">
                   {formatPrice(total)}
                 </span>
               </div>
@@ -438,13 +450,13 @@ export default function CheckoutPage() {
               isLoading={isSubmitting}
               variant="primary"
               size="lg"
-              className="w-full"
+              className="w-full h-14 text-[15px] shadow-[0_0_24px_-6px_var(--accent)] hover:shadow-[0_0_32px_-4px_var(--accent)]"
             >
-              {isSubmitting ? "Создание заказа..." : "Подтвердить заказ"}
+              {isSubmitting ? "Обработка..." : "Подтвердить заказ"}
             </Button>
 
-            <p className="text-[11px] text-center text-slate-500">
-              Нажимая кнопку, вы подтверждаете согласие на обработку контактных данных для связи оператора магазина SOGD MOBILE.
+            <p className="text-[11px] text-center text-[#56627a] leading-relaxed">
+              Нажимая кнопку, вы соглашаетесь с условиями обработки персональных данных.
             </p>
           </div>
         </div>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -6,170 +7,71 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CopyButton } from "@/components/ui/copy-button";
 import {
-  CheckCircle2,
-  Lock,
-  Search,
-  Trash2,
-  RefreshCw,
-  Phone,
-  Truck,
-  MapPin,
-  Save,
-  Plus,
-  X,
-  MessageCircle,
-  Package,
-  AlertCircle,
-  ExternalLink,
+  CheckCircle2, Lock, Search, Trash2, RefreshCw, Phone, Truck, MapPin, Save, Plus, X, MessageCircle, Package, AlertCircle, ExternalLink, ShieldAlert,
+  Activity, ArrowUpRight, DollarSign, Smartphone, User, History
 } from "lucide-react";
-
-interface AdminOrder {
-  id: string;
-  orderNumber: string;
-  customerName: string;
-  phone: string;
-  messenger?: string | null;
-  deliveryType: "DELIVERY" | "PICKUP";
-  city?: string | null;
-  address?: string | null;
-  comment?: string | null;
-  status: string;
-  subtotal: number;
-  deliveryCost: number;
-  total: number;
-  createdAt: string;
-  items: Array<{
-    id?: string;
-    productName: string;
-    price: number;
-    quantity: number;
-    subtotal: number;
-  }>;
-}
-
-interface AdminProduct {
-  id: string;
-  slug: string;
-  name: string;
-  price: number;
-  oldPrice?: number | null;
-  stock: number;
-  brand: string;
-  sku: string;
-  isPopular: boolean;
-  isNew: boolean;
-  isSale: boolean;
-  category: {
-    name: string;
-    slug?: string;
-  };
-}
 
 export default function AdminPage() {
   const [adminKey, setAdminKey] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeTab, setActiveTab] = useState<"orders" | "products">("orders");
+  const [activeTab, setActiveTab] = useState("dashboard");
 
-  // Orders state
-  const [orders, setOrders] = useState<AdminOrder[]>([]);
-  const [ordersLoading, setOrdersLoading] = useState(false);
-  const [orderFilter, setOrderFilter] = useState("ALL");
-
-  // Products state
-  const [products, setProducts] = useState<AdminProduct[]>([]);
-  const [productsLoading, setProductsLoading] = useState(false);
-  const [productSearch, setProductSearch] = useState("");
-
-  // Add Product Modal
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newProductData, setNewProductData] = useState({
-    name: "",
-    categoryId: "cases",
-    brand: "Apple",
-    price: "",
-    oldPrice: "",
-    stock: "15",
-    compatibleModels: "iPhone 15 Pro, iPhone 16 Pro",
-  });
-  const [isAddingProduct, setIsAddingProduct] = useState(false);
-
-  // Notification / message
+  // State
+  const [orders, setOrders] = useState<any[]>([]);
+  const [tradeIns, setTradeIns] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
+
+  // Dialogs
+  const [confirmOrderDialog, setConfirmOrderDialog] = useState<any>(null); // { type: 'confirm'|'cancel', order: obj }
+  const [cancelReason, setCancelReason] = useState("");
 
   const showNotification = (msg: string) => {
     setNotification(msg);
     setTimeout(() => setNotification(null), 3500);
   };
 
-  // Check saved key on mount and automatically fetch orders & products
   useEffect(() => {
     const saved = localStorage.getItem("sogd_admin_key");
     if (saved === "sogd_secret_admin_2026") {
       setAdminKey(saved);
       setIsAuthenticated(true);
-      fetchOrders(saved);
-      fetchProducts(saved);
+      fetchAll(saved);
     }
   }, []);
 
-  // Fetch orders
-  const fetchOrders = async (key: string = adminKey) => {
-    const secret = key || adminKey || localStorage.getItem("sogd_admin_key") || "";
-    if (!secret) return;
-
-    setOrdersLoading(true);
+  const fetchAll = async (secret: string) => {
+    setLoading(true);
     try {
-      const res = await fetch("/api/admin/orders", {
-        headers: { "x-admin-secret": secret },
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setOrders(data.orders || []);
-      }
+      const headers = { "x-admin-secret": secret };
+      const [resOrders, resProds, resTrade] = await Promise.all([
+        fetch("/api/admin/orders", { headers }),
+        fetch("/api/admin/products", { headers }),
+        fetch("/api/admin/trade-ins", { headers })
+      ]);
+      const [dOrd, dProd, dTrade] = await Promise.all([
+        resOrders.json(), resProds.json(), resTrade.json()
+      ]);
+      if (dOrd.success) setOrders(dOrd.orders || []);
+      if (dProd.success) setProducts(dProd.products || []);
+      if (dTrade.success) setTradeIns(dTrade.tradeIns || []);
     } catch (e) {
-      console.error("Error fetching orders:", e);
+      console.error(e);
     } finally {
-      setOrdersLoading(false);
+      setLoading(false);
     }
   };
 
-  // Fetch products
-  const fetchProducts = async (key: string = adminKey) => {
-    const secret = key || adminKey || localStorage.getItem("sogd_admin_key") || "";
-    if (!secret) return;
-
-    setProductsLoading(true);
-    try {
-      const res = await fetch("/api/admin/products", {
-        headers: { "x-admin-secret": secret },
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setProducts(data.products || []);
-      }
-    } catch (e) {
-      console.error("Error fetching products:", e);
-    } finally {
-      setProductsLoading(false);
-    }
-  };
-
-  const handleRefreshAll = async () => {
-    const secret = adminKey || localStorage.getItem("sogd_admin_key") || "";
-    await Promise.all([fetchOrders(secret), fetchProducts(secret)]);
-    showNotification("Данные каталога и заказов обновлены");
-  };
-
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = (e: any) => {
     e.preventDefault();
     if (adminKey === "sogd_secret_admin_2026") {
       setIsAuthenticated(true);
       localStorage.setItem("sogd_admin_key", adminKey);
-      fetchOrders(adminKey);
-      fetchProducts(adminKey);
+      fetchAll(adminKey);
       showNotification("Успешная авторизация в системе");
     } else {
-      alert("Неверный ключ доступа администратора. Используйте: sogd_secret_admin_2026");
+      alert("Неверный ключ.");
     }
   };
 
@@ -179,834 +81,310 @@ export default function AdminPage() {
     localStorage.removeItem("sogd_admin_key");
   };
 
-  // Update order status
-  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
-    const secret = adminKey || localStorage.getItem("sogd_admin_key") || "";
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: string, reason: string | null = null) => {
+    const secret = adminKey;
     try {
       const res = await fetch("/api/admin/orders", {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "x-admin-secret": secret,
-        },
-        body: JSON.stringify({ orderId, status: newStatus }),
+        headers: { "Content-Type": "application/json", "x-admin-secret": secret },
+        body: JSON.stringify({ orderId, status: newStatus, cancelReason: reason }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setOrders((prev) =>
-          prev.map((o) => (o.id === orderId || o.orderNumber === orderId ? { ...o, status: newStatus } : o))
-        );
-        showNotification(`Статус заказа обновлен на: ${newStatus}`);
+        setOrders(prev => prev.map(o => (o.id === orderId || o.orderNumber === orderId ? { ...o, status: newStatus, cancelReason: reason || o.cancelReason } : o)));
+        showNotification(`Статус заказа обновлен: ${newStatus}`);
       }
     } catch (e) {
       console.error(e);
     }
+    setConfirmOrderDialog(null);
+    setCancelReason("");
   };
 
-  // Quick update product price, stock or toggles
-  const handleUpdateProduct = async (
-    productId: string,
-    updates: { price?: number; stock?: number; isPopular?: boolean; isSale?: boolean }
-  ) => {
-    const secret = adminKey || localStorage.getItem("sogd_admin_key") || "";
+  const handleUpdateTradeInStatus = async (tradeId: string, newStatus: string) => {
+    const secret = adminKey;
     try {
-      const res = await fetch("/api/admin/products", {
+      const res = await fetch("/api/admin/trade-ins", {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "x-admin-secret": secret,
-        },
-        body: JSON.stringify({ productId, ...updates }),
+        headers: { "Content-Type": "application/json", "x-admin-secret": secret },
+        body: JSON.stringify({ id: tradeId, status: newStatus }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setProducts((prev) =>
-          prev.map((p) => (p.id === productId ? { ...p, ...updates } : p))
-        );
-        showNotification("Товар успешно обновлен в базе");
-        return true;
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    return false;
-  };
-
-  // Create new product
-  const handleCreateProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newProductData.name || !newProductData.price) {
-      alert("Укажите название и цену товара");
-      return;
-    }
-
-    setIsAddingProduct(true);
-    const secret = adminKey || localStorage.getItem("sogd_admin_key") || "";
-    try {
-      const res = await fetch("/api/admin/products", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-admin-secret": secret,
-        },
-        body: JSON.stringify({
-          name: newProductData.name,
-          categoryId: newProductData.categoryId,
-          brand: newProductData.brand,
-          price: parseFloat(newProductData.price),
-          oldPrice: newProductData.oldPrice ? parseFloat(newProductData.oldPrice) : null,
-          stock: parseInt(newProductData.stock, 10) || 10,
-          compatibleModels: newProductData.compatibleModels
-            .split(",")
-            .map((m) => m.trim())
-            .filter(Boolean),
-        }),
-      });
-
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setProducts((prev) => [data.product, ...prev]);
-        setIsAddModalOpen(false);
-        setNewProductData({
-          name: "",
-          categoryId: "cases",
-          brand: "Apple",
-          price: "",
-          oldPrice: "",
-          stock: "15",
-          compatibleModels: "iPhone 15 Pro, iPhone 16 Pro",
-        });
-        showNotification(`Товар «${data.product.name}» успешно добавлен!`);
-      } else {
-        alert(data.error || "Ошибка при создании товара");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Сетевая ошибка при создании товара");
-    } finally {
-      setIsAddingProduct(false);
-    }
-  };
-
-  // Delete product
-  const handleDeleteProduct = async (productId: string, productName: string) => {
-    if (!confirm(`Вы действительно хотите удалить товар «${productName}» из каталога?`)) return;
-
-    const secret = adminKey || localStorage.getItem("sogd_admin_key") || "";
-    try {
-      const res = await fetch(`/api/admin/products?id=${productId}`, {
-        method: "DELETE",
-        headers: { "x-admin-secret": secret },
-      });
-      if (res.ok) {
-        setProducts((prev) => prev.filter((p) => p.id !== productId));
-        showNotification("Товар успешно удален из каталога");
+        setTradeIns(prev => prev.map(t => (t.id === tradeId ? { ...t, status: newStatus } : t)));
+        showNotification(`Статус Trade-In обновлен: ${newStatus}`);
       }
     } catch (e) {
       console.error(e);
     }
   };
-
-  // Filtered orders
-  const filteredOrders = orders.filter((o) => {
-    if (orderFilter === "ALL") return true;
-    return o.status === orderFilter;
-  });
-
-  // Filtered products
-  const filteredProducts = products.filter((p) => {
-    if (!productSearch) return true;
-    const q = productSearch.toLowerCase();
-    return (
-      p.name.toLowerCase().includes(q) ||
-      p.sku.toLowerCase().includes(q) ||
-      p.brand.toLowerCase().includes(q)
-    );
-  });
 
   if (!isAuthenticated) {
     return (
-      <div className="max-w-md mx-auto px-4 py-20">
-        <div className="bg-[#0e121a] border border-[#1e2536] rounded-3xl p-8 space-y-6 shadow-2xl text-center">
-          <div className="w-16 h-16 rounded-2xl bg-[#0070F3]/15 text-[#00E5FF] flex items-center justify-center mx-auto">
-            <Lock className="w-8 h-8" />
+      <div className="min-h-screen flex items-center justify-center bg-[#07090D] px-4">
+        <form onSubmit={handleLogin} className="w-full max-w-sm glass-card p-8 space-y-6 text-center">
+          <div className="w-16 h-16 bg-[#111318] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#1c2030] shadow-[0_0_20px_-5px_var(--accent)]">
+            <Lock className="w-6 h-6 text-[#f1f3f7]" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white">Панель управления</h1>
-            <p className="text-xs text-slate-400 mt-1">
-              Вход для администратора магазина SOGD MOBILE
-            </p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-4 text-left">
-            <Input
-              id="adminKey"
-              type="password"
-              label="Секретный ключ администратора"
-              placeholder="Введите ключ доступа..."
-              value={adminKey}
-              onChange={(e) => setAdminKey(e.target.value)}
-            />
-            <Button variant="primary" size="lg" className="w-full">
-              Войти в панель
-            </Button>
-            <p className="text-[11px] text-slate-500 text-center">
-              Ключ по умолчанию: <code className="text-[#00E5FF]">sogd_secret_admin_2026</code>
-            </p>
-          </form>
-        </div>
+          <h1 className="text-2xl font-bold text-[#f1f3f7]">Admin Dashboard</h1>
+          <Input
+            type="password"
+            placeholder="Секретный ключ..."
+            value={adminKey}
+            onChange={(e) => setAdminKey(e.target.value)}
+            className="text-center bg-[#0d0f14]"
+          />
+          <Button type="submit" variant="primary" className="w-full">Войти</Button>
+        </form>
       </div>
     );
   }
 
-  const totalRevenue = orders
-    .filter((o) => o.status !== "CANCELLED")
-    .reduce((sum, o) => sum + (o.total || 0), 0);
+  // KPIs
+  const todayStart = new Date();
+  todayStart.setHours(0,0,0,0);
+  const ordersToday = orders.filter(o => new Date(o.createdAt) >= todayStart);
+  const revenueToday = ordersToday.filter(o => o.status !== "CANCELLED").reduce((acc, o) => acc + o.total, 0);
+  const lowStock = products.filter(p => p.stock > 0 && p.stock <= 5).length;
+  const newTradeIns = tradeIns.filter(t => t.status === "NEW").length;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-[#1a2030]">
-        <div>
-          <span className="text-xs font-bold uppercase tracking-widest text-[#00E5FF]">
-            Администрирование
-          </span>
-          <h1 className="text-3xl font-black text-white mt-0.5">SOGD MOBILE Admin</h1>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={handleRefreshAll}
-            variant="secondary"
-            size="sm"
-            className="text-xs gap-1.5 cursor-pointer"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${ordersLoading || productsLoading ? "animate-spin text-[#00E5FF]" : ""}`} />
-            <span>Обновить данные</span>
-          </Button>
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            size="sm"
-            className="text-xs text-slate-400 cursor-pointer"
-          >
-            Выйти
-          </Button>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-[#07090D] text-[#f1f3f7]">
       {notification && (
-        <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-medium flex items-center gap-3 shadow-lg shadow-emerald-500/10 transition-all">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-          <span>{notification}</span>
+        <div className="fixed top-24 right-8 z-50 animate-in slide-in-from-right fade-in bg-[#111318] border border-[#16a34a]/30 text-[#f1f3f7] px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3">
+          <CheckCircle2 className="w-5 h-5 text-[#16a34a]" />
+          <p className="text-sm font-semibold">{notification}</p>
         </div>
       )}
 
-      {/* KPI Stats Overview */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-2xl bg-[#0e121a] border border-[#1e2536] space-y-1">
-          <span className="text-xs text-slate-400">Всего заказов</span>
-          <p className="text-2xl font-black text-white">{orders.length}</p>
-        </div>
-        <div className="p-5 rounded-2xl bg-[#0e121a] border border-[#1e2536] space-y-1">
-          <span className="text-xs text-slate-400">Новых заказов</span>
-          <p className="text-2xl font-black text-amber-400">
-            {orders.filter((o) => o.status === "NEW").length}
-          </p>
-        </div>
-        <div className="p-5 rounded-2xl bg-[#0e121a] border border-[#1e2536] space-y-1">
-          <span className="text-xs text-slate-400">Товаров в каталоге</span>
-          <p className="text-2xl font-black text-[#00E5FF]">{products.length}</p>
-        </div>
-        <div className="p-5 rounded-2xl bg-[#0e121a] border border-[#1e2536] space-y-1">
-          <span className="text-xs text-slate-400">Общая выручка</span>
-          <p className="text-2xl font-black text-white">{formatPrice(totalRevenue)}</p>
-        </div>
-      </div>
-
-      {/* Tabs Switcher */}
-      <div className="flex items-center gap-2 border-b border-[#232A3B]">
-        <button
-          onClick={() => setActiveTab("orders")}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 transition-all cursor-pointer ${
-            activeTab === "orders"
-              ? "border-[#0070F3] text-white"
-              : "border-transparent text-slate-400 hover:text-slate-200"
-          }`}
-        >
-          Заказы ({orders.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("products")}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 transition-all cursor-pointer ${
-            activeTab === "products"
-              ? "border-[#0070F3] text-white"
-              : "border-transparent text-slate-400 hover:text-slate-200"
-          }`}
-        >
-          Каталог товаров ({products.length})
-        </button>
-      </div>
-
-      {/* TAB 1: ORDERS */}
-      {activeTab === "orders" && (
-        <div className="space-y-6">
-          {/* Order Status Filter Chips */}
-          <div className="flex flex-wrap items-center gap-2">
-            {[
-              { label: "Все заказы", val: "ALL" },
-              { label: "🟢 Новые", val: "NEW" },
-              { label: "🔵 Подтвержденные", val: "CONFIRMED" },
-              { label: "🟡 В сборке", val: "PROCESSING" },
-              { label: "🟣 В доставке", val: "DELIVERING" },
-              { label: "✅ Выполненные", val: "COMPLETED" },
-              { label: "❌ Отмененные", val: "CANCELLED" },
-            ].map((f) => (
-              <button
-                key={f.val}
-                onClick={() => setOrderFilter(f.val)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  orderFilter === f.val
-                    ? "bg-[#0070F3] text-white shadow-md shadow-[#0070F3]/25"
-                    : "bg-[#131722] text-slate-400 hover:text-white border border-[#232A3B]"
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-
-          {ordersLoading ? (
-            <div className="p-12 text-center text-slate-400 bg-[#0e121a] rounded-3xl border border-[#1e2536]">
-              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-[#00E5FF]" />
-              <p className="text-xs">Загрузка заказов...</p>
-            </div>
-          ) : filteredOrders.length === 0 ? (
-            <div className="p-12 text-center text-slate-400 bg-[#0e121a] rounded-3xl border border-[#1e2536] space-y-2">
-              <Package className="w-10 h-10 text-slate-600 mx-auto" />
-              <p className="text-sm font-semibold text-white">Заказов пока нет</p>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                Когда покупатели оформляют заказ на сайте, он мгновенно появляется здесь и дублируется в Telegram.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredOrders.map((order) => {
-                const cleanPhone = order.phone.replace(/\D/g, "");
-                const waLink = cleanPhone.startsWith("992")
-                  ? `https://wa.me/${cleanPhone}`
-                  : `https://wa.me/992${cleanPhone}`;
-
-                return (
-                  <div
-                    key={order.id}
-                    className="bg-[#0e121a] border border-[#1e2536] rounded-2xl p-5 sm:p-6 space-y-4 hover:border-slate-700 transition-all shadow-lg"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#232A3B]">
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <span className="font-mono text-base font-black text-white bg-[#131722] px-3 py-1 rounded-lg border border-[#232A3B]">
-                          {order.orderNumber}
-                        </span>
-                        <CopyButton text={order.orderNumber} label="Копировать" />
-                        <span className="text-xs text-slate-500">
-                          {formatDate(order.createdAt)}
-                        </span>
-                      </div>
-
-                      {/* Status Dropdown */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-400">Статус:</span>
-                        <select
-                          value={order.status}
-                          onChange={(e) =>
-                            handleUpdateOrderStatus(order.id, e.target.value)
-                          }
-                          className="bg-[#131722] border border-[#232A3B] text-xs font-semibold rounded-xl px-3 py-1.5 text-white focus:outline-none focus:border-[#0070F3] cursor-pointer"
-                        >
-                          <option value="NEW">🟢 NEW (Новый)</option>
-                          <option value="CONFIRMED">🔵 CONFIRMED (Подтвержден)</option>
-                          <option value="PROCESSING">🟡 PROCESSING (В сборке)</option>
-                          <option value="DELIVERING">🟣 DELIVERING (Доставляется)</option>
-                          <option value="COMPLETED">✅ COMPLETED (Выполнен)</option>
-                          <option value="CANCELLED">❌ CANCELLED (Отменен)</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Customer and Delivery details */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-slate-300">
-                      <div className="space-y-1">
-                        <p className="text-slate-500">Покупатель:</p>
-                        <p className="font-bold text-white text-sm">
-                          {order.customerName}
-                        </p>
-                        <div className="flex items-center gap-2 pt-1">
-                          <a
-                            href={`tel:${order.phone}`}
-                            className="text-[#00E5FF] hover:underline flex items-center gap-1 font-mono"
-                          >
-                            <Phone className="w-3.5 h-3.5 text-[#0070F3]" />
-                            <span>{order.phone}</span>
-                          </a>
-                          <a
-                            href={waLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25 transition-colors text-[11px]"
-                          >
-                            <MessageCircle className="w-3 h-3" />
-                            <span>WhatsApp</span>
-                          </a>
-                        </div>
-                        {order.messenger && (
-                          <p className="text-slate-400 text-[11px]">
-                            Мессенджер: {order.messenger}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="space-y-1">
-                        <p className="text-slate-500">Доставка:</p>
-                        <p className="font-semibold text-white flex items-center gap-1">
-                          {order.deliveryType === "DELIVERY" ? (
-                            <>
-                              <Truck className="w-3.5 h-3.5 text-[#0070F3]" />
-                              <span>Курьер по Худжанду</span>
-                            </>
-                          ) : (
-                            <>
-                              <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-                              <span>Самовывоз в магазине</span>
-                            </>
-                          )}
-                        </p>
-                        {order.address && (
-                          <p className="text-slate-400">
-                            {order.city ? `${order.city}, ` : ""}
-                            {order.address}
-                          </p>
-                        )}
-                        {order.comment && (
-                          <p className="text-amber-400/90 italic pt-1">
-                            «{order.comment}»
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="sm:text-right space-y-1">
-                        <p className="text-slate-500">Сумма к получению:</p>
-                        <p className="text-xl font-black text-[#00E5FF]">
-                          {formatPrice(order.total)}
-                        </p>
-                        <p className="text-slate-500 text-[11px]">
-                          Оплата наличными / переводом курьеру
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Items List */}
-                    <div className="pt-3 border-t border-[#232A3B]/60 text-xs">
-                      <span className="text-slate-500 font-medium mb-1.5 block">
-                        Товары в заказе ({order.items.length}):
-                      </span>
-                      <div className="flex flex-wrap gap-2">
-                        {order.items.map((item, idx) => (
-                          <span
-                            key={idx}
-                            className="bg-[#131722] border border-[#232A3B] px-2.5 py-1 rounded-lg text-slate-300"
-                          >
-                            {item.productName} × {item.quantity} шт. (
-                            {formatPrice(item.subtotal)})
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* TAB 2: PRODUCTS */}
-      {activeTab === "products" && (
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="relative w-full sm:max-w-md">
-              <input
-                type="text"
-                placeholder="Поиск по названию, бренду, артикулу..."
-                value={productSearch}
-                onChange={(e) => setProductSearch(e.target.value)}
-                className="w-full bg-[#131722] border border-[#232A3B] rounded-xl pl-9 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#0070F3]"
+      {confirmOrderDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="glass-card w-full max-w-md p-6 space-y-5 animate-in zoom-in-95">
+            <h3 className="text-xl font-bold text-white">
+              {confirmOrderDialog.type === "confirm" ? "Подтвердить заказ" : "Отменить заказ"}
+            </h3>
+            <p className="text-sm text-[#8a95a8]">
+              Заказ #{confirmOrderDialog.order.orderNumber} ({confirmOrderDialog.order.customerName})
+            </p>
+            {confirmOrderDialog.type === "cancel" && (
+              <Input
+                placeholder="Причина отмены..."
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
               />
-              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            </div>
-
-            <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-              <span className="text-xs text-slate-400">
-                Найдено: {filteredProducts.length} товаров
-              </span>
+            )}
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="secondary" onClick={() => setConfirmOrderDialog(null)}>Закрыть</Button>
               <Button
-                onClick={() => setIsAddModalOpen(true)}
-                variant="primary"
-                size="sm"
-                className="text-xs gap-1.5 cursor-pointer shadow-lg shadow-[#0070F3]/25"
+                variant={confirmOrderDialog.type === "confirm" ? "primary" : "outline"}
+                className={confirmOrderDialog.type === "cancel" ? "border-red-500 text-red-500 hover:bg-red-500/10" : ""}
+                onClick={() => handleUpdateOrderStatus(
+                  confirmOrderDialog.order.id || confirmOrderDialog.order.orderNumber,
+                  confirmOrderDialog.type === "confirm" ? "CONFIRMED" : "CANCELLED",
+                  confirmOrderDialog.type === "cancel" ? cancelReason : null
+                )}
               >
-                <Plus className="w-4 h-4" />
-                <span>Добавить товар</span>
+                {confirmOrderDialog.type === "confirm" ? "Подтвердить" : "Отменить"}
               </Button>
             </div>
           </div>
-
-          {/* Products Table */}
-          {productsLoading ? (
-            <div className="p-12 text-center text-slate-400 bg-[#0e121a] rounded-3xl border border-[#1e2536]">
-              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-[#00E5FF]" />
-              <p className="text-xs">Загрузка каталога...</p>
-            </div>
-          ) : (
-            <div className="bg-[#0e121a] border border-[#1e2536] rounded-3xl overflow-hidden overflow-x-auto shadow-xl">
-              <table className="w-full text-left text-xs text-slate-300">
-                <thead className="bg-[#131722] text-slate-400 border-b border-[#232A3B] uppercase tracking-wider text-[10px]">
-                  <tr>
-                    <th className="p-3.5">Товар</th>
-                    <th className="p-3.5">Категория</th>
-                    <th className="p-3.5">Бренд</th>
-                    <th className="p-3.5">Цена (TJS)</th>
-                    <th className="p-3.5">Остаток</th>
-                    <th className="p-3.5">Статус</th>
-                    <th className="p-3.5 text-right">Действия</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#232A3B]/50">
-                  {filteredProducts.map((p) => (
-                    <ProductRow
-                      key={p.id}
-                      product={p}
-                      onUpdate={handleUpdateProduct}
-                      onDelete={() => handleDeleteProduct(p.id, p.name)}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </div>
       )}
 
-      {/* MODAL: ADD PRODUCT */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#0e121a] border border-[#232A3B] rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
-            <div className="flex items-center justify-between pb-4 border-b border-[#232A3B]">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-[#0070F3]/15 text-[#00E5FF] flex items-center justify-center">
-                  <Plus className="w-4 h-4" />
-                </div>
-                <h3 className="text-lg font-bold text-white">Добавить новый товар</h3>
-              </div>
-              <button
-                onClick={() => setIsAddModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateProduct} className="space-y-4 text-left">
-              <Input
-                id="name"
-                label="Название товара *"
-                placeholder="Например: Чехол SOGD Armor MagSafe"
-                value={newProductData.name}
-                onChange={(e) => setNewProductData({ ...newProductData, name: e.target.value })}
-                required
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    Категория *
-                  </label>
-                  <select
-                    value={newProductData.categoryId}
-                    onChange={(e) => setNewProductData({ ...newProductData, categoryId: e.target.value })}
-                    className="w-full bg-[#131722] border border-[#232A3B] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#0070F3] cursor-pointer"
-                  >
-                    <option value="cases">Чехлы</option>
-                    <option value="screen-protectors">Защитные стекла</option>
-                    <option value="chargers">Зарядки</option>
-                    <option value="cables">Кабели</option>
-                    <option value="power-banks">Power Bank</option>
-                    <option value="headphones">Наушники</option>
-                    <option value="car-accessories">Автоаксессуары</option>
-                    <option value="smart-watches">Smart Watch</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    Бренд *
-                  </label>
-                  <select
-                    value={newProductData.brand}
-                    onChange={(e) => setNewProductData({ ...newProductData, brand: e.target.value })}
-                    className="w-full bg-[#131722] border border-[#232A3B] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#0070F3] cursor-pointer"
-                  >
-                    <option value="Apple">Apple</option>
-                    <option value="Samsung">Samsung</option>
-                    <option value="Xiaomi">Xiaomi</option>
-                    <option value="SOGD">SOGD</option>
-                    <option value="Baseus">Baseus</option>
-                    <option value="Anker">Anker</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <Input
-                  id="price"
-                  type="number"
-                  label="Цена (TJS) *"
-                  placeholder="120"
-                  value={newProductData.price}
-                  onChange={(e) => setNewProductData({ ...newProductData, price: e.target.value })}
-                  required
-                />
-                <Input
-                  id="oldPrice"
-                  type="number"
-                  label="Старая цена"
-                  placeholder="150"
-                  value={newProductData.oldPrice}
-                  onChange={(e) => setNewProductData({ ...newProductData, oldPrice: e.target.value })}
-                />
-                <Input
-                  id="stock"
-                  type="number"
-                  label="Остаток (шт.)"
-                  placeholder="15"
-                  value={newProductData.stock}
-                  onChange={(e) => setNewProductData({ ...newProductData, stock: e.target.value })}
-                />
-              </div>
-
-              <Input
-                id="compatibleModels"
-                label="Совместимые модели (через запятую)"
-                placeholder="iPhone 16 Pro, iPhone 15 Pro, Galaxy S24"
-                value={newProductData.compatibleModels}
-                onChange={(e) => setNewProductData({ ...newProductData, compatibleModels: e.target.value })}
-              />
-
-              <div className="pt-2 flex items-center justify-end gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="text-xs cursor-pointer"
-                >
-                  Отмена
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="sm"
-                  disabled={isAddingProduct}
-                  className="text-xs cursor-pointer gap-1.5"
-                >
-                  {isAddingProduct ? (
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Plus className="w-3.5 h-3.5" />
-                  )}
-                  <span>{isAddingProduct ? "Создание..." : "Создать товар"}</span>
-                </Button>
-              </div>
-            </form>
+      <header className="sticky top-0 z-40 bg-[#0B0F15]/80 backdrop-blur-xl border-b border-[#1c2030]">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <ShieldAlert className="w-6 h-6 text-[var(--accent)]" />
+            <h1 className="text-xl font-bold tracking-widest uppercase">SOGD Admin</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <button onClick={() => fetchAll(adminKey)} className="p-2 text-[#8a95a8] hover:text-white transition-colors" title="Обновить">
+              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-[var(--accent)]' : ''}`} />
+            </button>
+            <Button variant="outline" size="sm" onClick={handleLogout} className="text-xs">Выйти</Button>
           </div>
         </div>
-      )}
+      </header>
+
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        {/* Navigation Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#1c2030]">
+          {[
+            { id: "dashboard", label: "Dashboard", icon: Activity },
+            { id: "orders", label: "Заказы", icon: Package },
+            { id: "trade-in", label: "Trade-In", icon: Smartphone },
+            { id: "products", label: "Товары", icon: Package }
+          ].map(t => {
+            const Icon = t.icon;
+            const active = activeTab === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all ${active ? "bg-[var(--accent)] text-[#0B0F15] shadow-[0_0_20px_-5px_var(--accent)]" : "text-[#8a95a8] hover:bg-[#111318]"}`}
+              >
+                <Icon className="w-4 h-4" />
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {activeTab === "dashboard" && (
+          <div className="space-y-8 animate-in fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="glass-card p-6 flex flex-col justify-between">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500"><Package className="w-5 h-5"/></div>
+                </div>
+                <p className="text-[#8a95a8] text-sm font-semibold uppercase tracking-wider mb-1">Заказов сегодня</p>
+                <h3 className="text-3xl font-black">{ordersToday.length}</h3>
+              </div>
+              <div className="glass-card p-6 flex flex-col justify-between">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-500"><DollarSign className="w-5 h-5"/></div>
+                </div>
+                <p className="text-[#8a95a8] text-sm font-semibold uppercase tracking-wider mb-1">Выручка за сегодня</p>
+                <h3 className="text-3xl font-black">{formatPrice(revenueToday)}</h3>
+              </div>
+              <div className="glass-card p-6 flex flex-col justify-between">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500"><Smartphone className="w-5 h-5"/></div>
+                </div>
+                <p className="text-[#8a95a8] text-sm font-semibold uppercase tracking-wider mb-1">Новых Trade-In</p>
+                <h3 className="text-3xl font-black text-purple-400">{newTradeIns}</h3>
+              </div>
+              <div className="glass-card p-6 flex flex-col justify-between">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500"><AlertCircle className="w-5 h-5"/></div>
+                </div>
+                <p className="text-[#8a95a8] text-sm font-semibold uppercase tracking-wider mb-1">Мало на складе</p>
+                <h3 className="text-3xl font-black text-orange-400">{lowStock} <span className="text-sm font-normal text-[#56627a]">товаров</span></h3>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "orders" && (
+          <div className="space-y-6 animate-in fade-in">
+            <h2 className="text-2xl font-bold">Управление заказами</h2>
+            <div className="space-y-4">
+              {orders.length === 0 && <p className="text-[#8a95a8]">Заказов пока нет</p>}
+              {orders.map(o => (
+                <div key={o.id} className="glass-card p-6">
+                  <div className="flex flex-col lg:flex-row gap-6 justify-between items-start">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-xl font-black text-white">#{o.orderNumber}</span>
+                        <span className={`text-xs px-2 py-1 rounded-full font-bold uppercase ${o.status==='NEW'?'bg-blue-500/20 text-blue-400':o.status==='CONFIRMED'?'bg-green-500/20 text-green-400':o.status==='CANCELLED'?'bg-red-500/20 text-red-400':'bg-[#1c2030] text-[#8a95a8]'}`}>
+                          {o.status}
+                        </span>
+                        <span className="text-xs text-[#56627a]">{formatDate(o.createdAt)}</span>
+                      </div>
+                      <div className="text-sm text-[#8a95a8] space-y-1">
+                        <p><strong className="text-[#f1f3f7]">{o.customerName}</strong> • {o.phone}</p>
+                        {o.deliveryType === 'DELIVERY' ? (
+                          <p><Truck className="inline w-3 h-3 mr-1"/> Доставка: {o.city}, {o.address}</p>
+                        ) : (
+                          <p><MapPin className="inline w-3 h-3 mr-1"/> Самовывоз</p>
+                        )}
+                        {o.comment && <p className="text-[var(--accent-cyan)] mt-2">Комментарий: {o.comment}</p>}
+                        {o.cancelReason && <p className="text-red-400 mt-2">Причина отмены: {o.cancelReason}</p>}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-black text-[var(--accent)]">{formatPrice(o.total)}</p>
+                      <p className="text-xs text-[#56627a]">{o.items?.length || 0} товаров</p>
+                    </div>
+                  </div>
+                  <div className="mt-6 pt-4 border-t border-[#1c2030] flex gap-3">
+                    {o.status === "NEW" && (
+                      <>
+                        <Button variant="primary" size="sm" onClick={() => setConfirmOrderDialog({type:'confirm', order: o})}>Подтвердить</Button>
+                        <Button variant="outline" size="sm" className="border-red-500 text-red-500 hover:bg-red-500/10" onClick={() => setConfirmOrderDialog({type:'cancel', order: o})}>Отменить</Button>
+                      </>
+                    )}
+                    {o.status === "CONFIRMED" && (
+                      <Button variant="secondary" size="sm" onClick={() => handleUpdateOrderStatus(o.id || o.orderNumber, "COMPLETED")}>Завершить (Выдан)</Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "trade-in" && (
+          <div className="space-y-6 animate-in fade-in">
+            <h2 className="text-2xl font-bold">Заявки Trade-In</h2>
+            <div className="space-y-4">
+              {tradeIns.length === 0 && <p className="text-[#8a95a8]">Заявок пока нет</p>}
+              {tradeIns.map(t => (
+                <div key={t.id} className="glass-card p-6">
+                  <div className="flex flex-col lg:flex-row gap-6 justify-between items-start">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-xl font-black text-white">{t.id}</span>
+                        <span className={`text-xs px-2 py-1 rounded-full font-bold uppercase ${t.status==='NEW'?'bg-purple-500/20 text-purple-400':t.status==='REVIEWING'?'bg-blue-500/20 text-blue-400':t.status==='COMPLETED'?'bg-green-500/20 text-green-400':t.status==='CANCELLED'?'bg-red-500/20 text-red-400':'bg-[#1c2030] text-[#8a95a8]'}`}>
+                          {t.status}
+                        </span>
+                        <span className="text-xs text-[#56627a]">{formatDate(t.createdAt)}</span>
+                      </div>
+                      <div className="text-sm text-[#8a95a8] space-y-1">
+                        <p><strong className="text-[#f1f3f7]">{t.customerName}</strong> • {t.phone}</p>
+                        <p className="mt-2 text-[#f1f3f7] font-semibold">{t.brand} {t.model} ({t.memory}) — {t.condition}</p>
+                        <p>Батарея: {t.battery || "?"}% • Комплект: {t.accessories?.join(', ') || "Нет"}</p>
+                        {t.description && <p className="mt-2 opacity-80">{t.description}</p>}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2 min-w-[200px]">
+                      <select 
+                        value={t.status}
+                        onChange={(e) => handleUpdateTradeInStatus(t.id, e.target.value)}
+                        className="bg-[#111318] border border-[#1c2030] rounded-xl px-3 py-2 text-sm text-[#f1f3f7] focus:outline-none focus:border-[var(--accent)]"
+                      >
+                        <option value="NEW">NEW</option>
+                        <option value="REVIEWING">REVIEWING</option>
+                        <option value="VALUED">VALUED (Оценено)</option>
+                        <option value="ACCEPTED">ACCEPTED (Клиент согласен)</option>
+                        <option value="REJECTED">REJECTED (Клиент отказался)</option>
+                        <option value="COMPLETED">COMPLETED</option>
+                        <option value="CANCELLED">CANCELLED</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "products" && (
+          <div className="space-y-6 animate-in fade-in">
+             <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Каталог товаров</h2>
+              <span className="text-[#8a95a8] text-sm">Всего: {products.length}</span>
+             </div>
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {products.slice(0, 12).map(p => (
+                <div key={p.id} className="glass-card p-4">
+                  <p className="text-xs text-[var(--accent-cyan)] font-bold mb-1">{p.brand}</p>
+                  <p className="font-bold text-sm text-[#f1f3f7] line-clamp-2 h-10 mb-2">{p.name}</p>
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <p className="text-lg font-black text-[var(--accent)]">{formatPrice(p.price)}</p>
+                      <p className="text-xs text-[#56627a]">Склад: {p.stock}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+             </div>
+             <p className="text-center text-[#56627a] mt-4">Отображены первые 12 товаров для демо.</p>
+          </div>
+        )}
+
+      </main>
     </div>
-  );
-}
-
-interface ProductRowProps {
-  product: AdminProduct;
-  onUpdate: (id: string, updates: { price?: number; stock?: number; isPopular?: boolean; isSale?: boolean }) => Promise<boolean>;
-  onDelete: () => void;
-}
-
-function ProductRow({ product, onUpdate, onDelete }: ProductRowProps) {
-  const [price, setPrice] = useState<string>(String(product.price));
-  const [stock, setStock] = useState<string>(String(product.stock));
-  const [isPopular, setIsPopular] = useState(product.isPopular);
-  const [isSale, setIsSale] = useState(product.isSale);
-  const [saving, setSaving] = useState(false);
-  const [savedSuccess, setSavedSuccess] = useState(false);
-
-  const hasChanges =
-    parseFloat(price) !== product.price ||
-    parseInt(stock, 10) !== product.stock ||
-    isPopular !== product.isPopular ||
-    isSale !== product.isSale;
-
-  const handleSave = async () => {
-    const numPrice = parseFloat(price);
-    const numStock = parseInt(stock, 10);
-    if (isNaN(numPrice) || numPrice < 0) return;
-
-    setSaving(true);
-    const success = await onUpdate(product.id, {
-      price: numPrice,
-      stock: isNaN(numStock) ? 0 : numStock,
-      isPopular,
-      isSale,
-    });
-    setSaving(false);
-
-    if (success) {
-      setSavedSuccess(true);
-      setTimeout(() => setSavedSuccess(false), 2000);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSave();
-    }
-  };
-
-  return (
-    <tr className="hover:bg-white/5 transition-colors">
-      <td className="p-3.5">
-        <div className="font-semibold text-white max-w-xs leading-tight">
-          {product.name}
-        </div>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="font-mono text-[10px] text-slate-500">
-            {product.sku}
-          </span>
-          <a
-            href={`/product/${product.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-slate-500 hover:text-[#00E5FF] transition-colors"
-            title="Открыть страницу товара"
-          >
-            <ExternalLink className="w-3 h-3" />
-          </a>
-        </div>
-      </td>
-
-      <td className="p-3.5 text-slate-400">{product.category?.name || "Чехлы"}</td>
-
-      <td className="p-3.5">
-        <span className="px-2 py-0.5 rounded bg-[#131722] border border-[#232A3B] font-bold text-[10px] text-[#00E5FF]">
-          {product.brand}
-        </span>
-      </td>
-
-      <td className="p-3.5">
-        <div className="flex items-center gap-1">
-          <input
-            type="number"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="w-20 bg-[#131722] border border-[#232A3B] focus:border-[#0070F3] rounded-lg px-2.5 py-1 text-xs text-white font-bold transition-colors"
-          />
-          <span className="text-[10px] text-slate-500 font-semibold">с.</span>
-        </div>
-      </td>
-
-      <td className="p-3.5">
-        <input
-          type="number"
-          value={stock}
-          onChange={(e) => setStock(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className={`w-16 bg-[#131722] border rounded-lg px-2.5 py-1 text-xs font-bold transition-colors ${
-            parseInt(stock, 10) > 0
-              ? "border-[#232A3B] text-emerald-400 focus:border-emerald-500"
-              : "border-red-500/50 text-red-400 focus:border-red-500"
-          }`}
-        />
-      </td>
-
-      {/* Status Badges & Quick Toggles */}
-      <td className="p-3.5">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <button
-            type="button"
-            onClick={() => {
-              const next = !isPopular;
-              setIsPopular(next);
-              onUpdate(product.id, { isPopular: next });
-            }}
-            className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
-              isPopular
-                ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                : "bg-[#131722] text-slate-500 border border-[#232A3B] opacity-50 hover:opacity-100"
-            }`}
-            title="Переключить статус 'Хит продаж'"
-          >
-            🔥 Хит
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              const next = !isSale;
-              setIsSale(next);
-              onUpdate(product.id, { isSale: next });
-            }}
-            className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
-              isSale
-                ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                : "bg-[#131722] text-slate-500 border border-[#232A3B] opacity-50 hover:opacity-100"
-            }`}
-            title="Переключить статус 'Акция'"
-          >
-            🏷 Акция
-          </button>
-        </div>
-      </td>
-
-      <td className="p-3.5 text-right">
-        <div className="flex items-center justify-end gap-1.5">
-          {savedSuccess ? (
-            <span className="text-emerald-400 text-xs font-bold flex items-center gap-1 px-2 py-1 bg-emerald-500/10 rounded-lg border border-emerald-500/30">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Сохранено!</span>
-            </span>
-          ) : hasChanges ? (
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#0070F3] hover:bg-[#005bb5] text-white rounded-lg text-xs font-bold shadow-md shadow-[#0070F3]/25 transition-all cursor-pointer active:scale-95"
-              title="Сохранить изменения"
-            >
-              {saving ? (
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Save className="w-3.5 h-3.5" />
-              )}
-              <span>Сохранить</span>
-            </button>
-          ) : null}
-
-          <button
-            onClick={onDelete}
-            className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
-            title="Удалить товар"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-      </td>
-    </tr>
   );
 }

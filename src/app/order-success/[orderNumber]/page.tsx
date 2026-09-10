@@ -40,7 +40,7 @@ export default async function OrderSuccessPage({
   const order = dbOrder || {
     id: "ord_preview",
     orderNumber,
-    customerName: "Уважаемый покупатель",
+    customerName: "Покупатель",
     phone: storeConfig.phoneFormatted,
     messenger: null,
     deliveryType: "PICKUP" as const,
@@ -60,112 +60,113 @@ export default async function OrderSuccessPage({
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Top Success Card */}
-      <div className="bg-[#0e121a] border border-emerald-500/30 rounded-3xl p-8 sm:p-12 text-center space-y-6 shadow-2xl relative overflow-hidden">
-        <div className="w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mx-auto">
-          <CheckCircle2 className="w-10 h-10" />
+      <div className="bg-[#111318] border border-[#16a34a]/30 rounded-3xl p-8 sm:p-12 text-center space-y-6 shadow-[0_0_60px_-15px_rgba(22,163,74,0.15)] relative overflow-hidden">
+        <div className="w-24 h-24 rounded-full bg-[#16a34a]/10 border border-[#16a34a]/30 flex items-center justify-center text-[#16a34a] mx-auto shadow-[0_0_40px_-10px_rgba(22,163,74,0.3)]">
+          <CheckCircle2 className="w-12 h-12" />
         </div>
 
-        <div className="space-y-2">
-          <span className="text-xs uppercase font-bold text-[#00E5FF] tracking-widest">
-            Заказ принят в обработку
+        <div className="space-y-3">
+          <span className="text-[12px] uppercase font-extrabold text-[var(--accent-cyan)] tracking-widest bg-[var(--accent-cyan)]/10 px-3 py-1 rounded-full border border-[var(--accent-cyan)]/20 inline-block">
+            Заказ принят
           </span>
-          <h1 className="text-3xl sm:text-4xl font-black text-white">
+          <h1 className="text-3xl sm:text-4xl font-black text-[#f1f3f7] tracking-tight">
             Спасибо за покупку, {order.customerName}!
           </h1>
-          <p className="text-slate-400 text-sm max-w-md mx-auto flex items-center justify-center gap-2 flex-wrap">
-            <span>Номер вашего заказа:</span>
-            <strong className="text-white font-mono text-base bg-[#131722] px-3 py-1 rounded-lg border border-[#232A3B]">
-              {order.orderNumber}
-            </strong>
-            <CopyButton text={order.orderNumber} label="Копировать" />
-          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <span className="text-[#8a95a8] text-[15px]">Номер заказа:</span>
+            <div className="flex items-center gap-2 bg-[#0d0f14] border border-[#1c2030] px-4 py-2 rounded-xl">
+              <strong className="text-[#f1f3f7] font-mono text-lg tracking-wider">
+                {order.orderNumber}
+              </strong>
+              <CopyButton text={order.orderNumber} label="Копировать" />
+            </div>
+          </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#131722] border border-[#232A3B] max-w-lg mx-auto text-xs text-slate-300 flex items-center justify-center gap-3">
-          <ShieldCheck className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-          <span>
-            Наш менеджер свяжется с вами по номеру{" "}
-            <strong className="text-white">{order.phone}</strong> для подтверждения в течение 10–15 минут.
+        <div className="p-4 rounded-xl bg-[#16a34a]/5 border border-[#16a34a]/20 max-w-lg mx-auto text-[13px] text-[#f1f3f7] flex items-center justify-center gap-3 mt-4">
+          <ShieldCheck className="w-5 h-5 text-[#16a34a] flex-shrink-0" />
+          <span className="leading-relaxed text-left">
+            Менеджер свяжется с вами по номеру <strong className="text-white">{order.phone}</strong> для подтверждения в течение 15 минут.
           </span>
         </div>
       </div>
 
       {/* Order Details & Summary Card */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mt-8 items-start">
-        {/* Items List (7 cols) */}
-        <div className="md:col-span-7 bg-[#0e121a] border border-[#1e2536] rounded-3xl p-6 sm:p-8 space-y-4">
-          <h3 className="font-bold text-white text-base pb-3 border-b border-[#232A3B] flex items-center gap-2">
-            <Package className="w-4 h-4 text-[#00E5FF]" />
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mt-6 items-start">
+        {/* Items List */}
+        <div className="md:col-span-7 glass-card p-6 sm:p-8 space-y-4">
+          <h3 className="font-extrabold text-[#f1f3f7] text-[16px] pb-4 border-b border-[#1c2030] flex items-center gap-2">
+            <Package className="w-5 h-5 text-[var(--accent)]" />
             <span>Состав заказа</span>
           </h3>
 
-          <div className="divide-y divide-[#232A3B]/50 space-y-3">
+          <div className="divide-y divide-[#1c2030] space-y-4">
             {order.items.map((item) => (
               <div
                 key={item.id}
-                className="pt-3 first:pt-0 flex items-center justify-between gap-4 text-xs"
+                className="pt-4 first:pt-0 flex items-center justify-between gap-4 text-[14px]"
               >
                 <div>
-                  <h4 className="font-semibold text-white text-sm">
+                  <h4 className="font-bold text-[#f1f3f7]">
                     {item.productName}
                   </h4>
-                  <p className="text-slate-500">
+                  <p className="text-[#8a95a8] mt-0.5 text-[13px]">
                     {item.quantity} шт. × {formatPrice(item.price)}
                   </p>
                 </div>
-                <span className="font-bold text-white text-sm">
+                <span className="font-extrabold text-[#f1f3f7]">
                   {formatPrice(item.subtotal)}
                 </span>
               </div>
             ))}
           </div>
 
-          <div className="pt-4 border-t border-[#232A3B] space-y-2 text-xs">
-            <div className="flex justify-between text-slate-400">
-              <span>Сумма товаров:</span>
-              <span className="text-white">{formatPrice(order.subtotal)}</span>
+          <div className="pt-5 border-t border-[#1c2030] space-y-3 text-[14px]">
+            <div className="flex justify-between text-[#8a95a8]">
+              <span>Сумма:</span>
+              <span className="text-[#f1f3f7]">{formatPrice(order.subtotal)}</span>
             </div>
-            <div className="flex justify-between text-slate-400">
+            <div className="flex justify-between text-[#8a95a8]">
               <span>Доставка:</span>
-              <span className="text-emerald-400 font-semibold">
+              <span className="text-[#16a34a] font-bold">
                 {order.deliveryCost === 0 ? "Бесплатно" : formatPrice(order.deliveryCost)}
               </span>
             </div>
-            <div className="flex justify-between text-base font-bold text-white pt-2 border-t border-[#232A3B]">
-              <span>Всего к оплате:</span>
-              <span className="text-xl text-[#00E5FF]">
+            <div className="flex justify-between items-end pt-3 border-t border-[#1c2030]">
+              <span className="font-bold text-[#8a95a8]">Итого:</span>
+              <span className="text-2xl text-[var(--accent)] font-black tracking-tight">
                 {formatPrice(order.total)}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Destination / Pickup Info (5 cols) */}
-        <div className="md:col-span-5 bg-[#0e121a] border border-[#1e2536] rounded-3xl p-6 sm:p-8 space-y-5">
-          <h3 className="font-bold text-white text-base pb-3 border-b border-[#232A3B] flex items-center gap-2">
+        {/* Destination / Pickup Info */}
+        <div className="md:col-span-5 glass-card p-6 sm:p-8 space-y-6">
+          <h3 className="font-extrabold text-[#f1f3f7] text-[16px] pb-4 border-b border-[#1c2030] flex items-center gap-2">
             {order.deliveryType === "DELIVERY" ? (
-              <Truck className="w-4 h-4 text-[#0070F3]" />
+              <Truck className="w-5 h-5 text-[var(--accent-cyan)]" />
             ) : (
-              <MapPin className="w-4 h-4 text-emerald-400" />
+              <MapPin className="w-5 h-5 text-[#16a34a]" />
             )}
             <span>
               {order.deliveryType === "DELIVERY"
-                ? "Адрес доставки"
-                : "Пункт самовывоза"}
+                ? "Доставка"
+                : "Самовывоз"}
             </span>
           </h3>
 
-          <div className="text-xs text-slate-300 space-y-3">
+          <div className="text-[13px] text-[#8a95a8] space-y-3">
             {order.deliveryType === "DELIVERY" ? (
               <>
                 <p>
-                  <strong className="text-white">Город:</strong> {order.city}
+                  <strong className="text-[#f1f3f7]">Город:</strong> {order.city}
                 </p>
-                <p>
-                  <strong className="text-white">Адрес:</strong> {order.address}
+                <p className="leading-relaxed">
+                  <strong className="text-[#f1f3f7]">Адрес:</strong> {order.address}
                 </p>
                 {order.comment && (
-                  <p className="text-slate-400 italic">
+                  <p className="text-[var(--accent-cyan)] italic p-3 bg-[var(--accent-cyan)]/10 rounded-xl border border-[var(--accent-cyan)]/20">
                     «{order.comment}»
                   </p>
                 )}
@@ -173,41 +174,37 @@ export default async function OrderSuccessPage({
             ) : (
               <>
                 <p>
-                  <strong className="text-white">Магазин:</strong> {storeConfig.name}
+                  <strong className="text-[#f1f3f7]">Магазин:</strong> {storeConfig.name}
                 </p>
-                <p className="text-slate-400">{storeConfig.address}</p>
-                <p className="text-emerald-400 font-semibold">
-                  Готов к выдаче ежедневно с 09:00 до 20:00
+                <p className="leading-relaxed">{storeConfig.address}</p>
+                <p className="text-[var(--accent-cyan)] font-semibold pt-1">
+                  Заказ будет собран через 15 минут.
                 </p>
               </>
             )}
 
-            <div className="pt-3 border-t border-[#232A3B]">
-              <p className="text-slate-500">
-                Дата заказа: {formatDate(order.createdAt)}
-              </p>
-              <p className="text-slate-500 mt-0.5">
-                Способ оплаты: Оплата при получении
-              </p>
+            <div className="pt-4 border-t border-[#1c2030] space-y-1.5">
+              <p>Дата: {formatDate(order.createdAt)}</p>
+              <p>Оплата: При получении</p>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-[#232A3B] space-y-2">
+          <div className="pt-2 space-y-3">
             <a
               href={`https://t.me/${storeConfig.telegram}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full"
             >
-              <Button variant="secondary" size="md" className="w-full text-xs gap-2">
-                <Send className="w-3.5 h-3.5 text-[#00E5FF]" />
-                <span>Написать в Telegram поддержки</span>
+              <Button variant="secondary" className="w-full text-[13px] gap-2 h-12 shadow-[0_0_15px_-5px_var(--accent-cyan)] hover:shadow-[0_0_20px_-5px_var(--accent-cyan)] border-[var(--accent-cyan)]/30">
+                <Send className="w-4 h-4 text-[var(--accent-cyan)]" />
+                <span>Написать в Telegram</span>
               </Button>
             </a>
             <Link href="/catalog" className="w-full block">
-              <Button variant="outline" size="md" className="w-full text-xs gap-2">
+              <Button variant="outline" className="w-full text-[13px] gap-2 h-12">
                 <span>Продолжить покупки</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
           </div>

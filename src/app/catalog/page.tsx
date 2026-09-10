@@ -21,6 +21,9 @@ interface CatalogPageProps {
     sort?: string;
     search?: string;
     sale?: string;
+    material?: string;
+    color?: string;
+    capacity?: string;
   }>;
 }
 
@@ -36,6 +39,9 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const sort = (params.sort as SortOption) || "popular";
   const search = params.search;
   const sale = params.sale === "true";
+  const material = params.material;
+  const color = params.color;
+  const capacity = params.capacity;
 
   // Fetch filtered products and categories with fallback
   const [productsDTO, categoriesDTO, allProducts] = await Promise.all([
@@ -49,6 +55,9 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       isSale: sale || undefined,
       sort,
       search,
+      material,
+      color,
+      capacity,
     }),
     getCategories(),
     getProducts(), // all products for brand/model filter list
@@ -78,3 +87,4 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     />
   );
 }
+

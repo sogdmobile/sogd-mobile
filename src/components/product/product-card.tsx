@@ -67,11 +67,11 @@ export function ProductCard({
   return (
     <article
       className={cn(
-        "group relative flex flex-col bg-[#111318] border border-[#1c2030] rounded-2xl overflow-hidden transition-all duration-220",
-        "hover:border-[#252d3d] hover:shadow-[0_12px_40px_-8px_rgba(43,127,255,0.18)]",
+        "group relative flex flex-col glass-card rounded-2xl overflow-hidden transition-all duration-300",
+        "hover:-translate-y-1 hover:border-[var(--accent)]/40 hover:shadow-[0_16px_40px_-12px_rgba(43,127,255,0.2)]",
         className
       )}
-      style={{ transition: "border-color 220ms cubic-bezier(0.16,1,0.3,1), box-shadow 220ms cubic-bezier(0.16,1,0.3,1)" }}
+      style={{ transition: "all 300ms cubic-bezier(0.16,1,0.3,1)" }}
     >
       {/* ── Image area ── */}
       <Link href={`/product/${slug}`} className="block relative aspect-square w-full overflow-hidden bg-[#0d0f14] shrink-0">
