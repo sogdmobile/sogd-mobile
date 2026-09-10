@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { formatPrice, formatDate } from "@/lib/formatters";
 import { storeConfig } from "@/config/store";
 import { Button } from "@/components/ui/button";
+import { CopyButton } from "@/components/ui/copy-button";
 import {
   CheckCircle2,
   Package,
@@ -71,11 +72,12 @@ export default async function OrderSuccessPage({
           <h1 className="text-3xl sm:text-4xl font-black text-white">
             Спасибо за покупку, {order.customerName}!
           </h1>
-          <p className="text-slate-400 text-sm max-w-md mx-auto">
-            Номер вашего заказа:{" "}
+          <p className="text-slate-400 text-sm max-w-md mx-auto flex items-center justify-center gap-2 flex-wrap">
+            <span>Номер вашего заказа:</span>
             <strong className="text-white font-mono text-base bg-[#131722] px-3 py-1 rounded-lg border border-[#232A3B]">
               {order.orderNumber}
             </strong>
+            <CopyButton text={order.orderNumber} label="Копировать" />
           </p>
         </div>
 

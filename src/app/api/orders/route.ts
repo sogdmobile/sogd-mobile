@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { createOrderApiSchema } from "@/lib/validation/checkout";
 import { storeConfig } from "@/config/store";
 import { INITIAL_PRODUCTS } from "@/data/initial-catalog";
+import { sendOrderTelegramNotification } from "@/lib/telegram";
 
 export async function POST(req: NextRequest) {
   try {
@@ -178,6 +179,23 @@ export async function POST(req: NextRequest) {
       };
     }
 
+    // Trigger instant Telegram Notification to store manager
+    sendOrderTelegramNotification({
+      orderNumber,
+      customerName,
+      phone,
+      messenger: messenger || null,
+      deliveryType,
+      city: city || null,
+      address: address || null,
+      comment: comment || null,
+      items: validatedItems,
+      subtotal,
+      deliveryCost,
+      total,
+    }).catch((err) => {
+      console.error("[Telegram] Async dispatch error:", err);
+    });
 
     return NextResponse.json({
       success: true,

@@ -58,6 +58,38 @@ export default function CheckoutPage() {
     deliveryType === "PICKUP" ? 0 : isFree ? 0 : storeConfig.delivery.inCityCost;
   const total = subtotal + deliveryCost;
 
+  const handlePhoneInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    const digits = val.replace(/\D/g, "");
+
+    if (!digits) {
+      setValue("phone", "", { shouldValidate: true });
+      return;
+    }
+
+    let coreDigits = digits;
+    if (coreDigits.startsWith("992")) {
+      coreDigits = coreDigits.slice(3);
+    }
+    coreDigits = coreDigits.slice(0, 9);
+
+    let formatted = "+992";
+    if (coreDigits.length > 0) {
+      formatted += " (" + coreDigits.slice(0, 2);
+    }
+    if (coreDigits.length >= 2) {
+      formatted += ") " + coreDigits.slice(2, 5);
+    }
+    if (coreDigits.length >= 5) {
+      formatted += "-" + coreDigits.slice(5, 7);
+    }
+    if (coreDigits.length >= 7) {
+      formatted += "-" + coreDigits.slice(7, 9);
+    }
+
+    setValue("phone", formatted, { shouldValidate: true });
+  };
+
   const onSubmit = async (data: CheckoutFormData) => {
     if (items.length === 0) {
       setServerError("Ваша корзина пуста. Добавьте товары перед оформлением заказа.");
@@ -184,8 +216,9 @@ export default function CheckoutPage() {
                 <Input
                   id="phone"
                   label="Номер телефона *"
-                  placeholder="92 000 0000 или +992..."
+                  placeholder="+992 (92) 000-00-00"
                   {...register("phone")}
+                  onChange={handlePhoneInputChange}
                   error={errors.phone?.message}
                 />
 
