@@ -3,6 +3,7 @@ import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { CartDrawer } from "@/components/cart/cart-drawer";
+import { FloatingContact } from "@/components/layout/floating-contact";
 import { storeConfig } from "@/config/store";
 
 export const metadata: Metadata = {
@@ -88,6 +89,7 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
         <Footer />
         <CartDrawer />
+        <FloatingContact />
       </body>
     </html>
   );

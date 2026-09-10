@@ -19,6 +19,8 @@ import {
   Sparkles,
   Layers,
   Smartphone,
+  MessageCircle,
+  Send,
 } from "lucide-react";
 
 interface ProductDetailViewProps {
@@ -275,6 +277,49 @@ export function ProductDetailView({
                   </span>
                 )}
               </Button>
+            </div>
+
+            {/* Quick 1-Click WhatsApp & Telegram Purchase */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <a
+                href={`https://wa.me/992920000000?text=${encodeURIComponent(
+                  `Здравствуйте! Хочу заказать "${product.name}" (${quantity} шт.) за ${
+                    product.price * quantity
+                  } сомони с доставкой по Худжанду.`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full"
+              >
+                <Button
+                  variant="outline"
+                  size="md"
+                  className="w-full border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500 text-xs font-semibold gap-2 h-11"
+                >
+                  <MessageCircle className="w-4 h-4 text-emerald-400" />
+                  <span>Купить в WhatsApp</span>
+                </Button>
+              </a>
+
+              <a
+                href={`https://t.me/sogdmobile_support?text=${encodeURIComponent(
+                  `Здравствуйте! Хочу заказать "${product.name}" (${quantity} шт.) за ${
+                    product.price * quantity
+                  } сомони с доставкой по Худжанду.`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full"
+              >
+                <Button
+                  variant="outline"
+                  size="md"
+                  className="w-full border-[#0070F3]/40 text-[#00E5FF] hover:bg-[#0070F3]/10 hover:border-[#0070F3] text-xs font-semibold gap-2 h-11"
+                >
+                  <Send className="w-4 h-4 text-[#00E5FF]" />
+                  <span>Заказ в Telegram</span>
+                </Button>
+              </a>
             </div>
           </div>
 

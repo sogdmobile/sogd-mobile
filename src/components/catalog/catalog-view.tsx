@@ -300,6 +300,46 @@ export function CatalogView({
         </form>
       </div>
 
+      {/* Quick Model Chips */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
+        <span className="text-slate-500 text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap pr-1">
+          Модели:
+        </span>
+        <button
+          onClick={() => updateFilters({ model: null })}
+          className={`px-3 py-1.5 rounded-full border transition-all whitespace-nowrap font-medium ${
+            !currentModel
+              ? "bg-[#0070F3] border-[#0070F3] text-white shadow-sm shadow-[#0070F3]/30"
+              : "bg-[#131722] border-[#232A3B] text-slate-400 hover:text-white hover:border-[#0070F3]/50"
+          }`}
+        >
+          Все модели
+        </button>
+        {[
+          "iPhone 16 Pro",
+          "iPhone 15 Pro",
+          "iPhone 14",
+          "Samsung Galaxy S24 Ultra",
+          "Xiaomi 14",
+          "Redmi Note 13",
+        ].map((m) => {
+          const isActive = currentModel.toLowerCase() === m.toLowerCase();
+          return (
+            <button
+              key={m}
+              onClick={() => updateFilters({ model: isActive ? null : m })}
+              className={`px-3 py-1.5 rounded-full border transition-all whitespace-nowrap font-medium ${
+                isActive
+                  ? "bg-[#0070F3] border-[#0070F3] text-white shadow-sm shadow-[#0070F3]/30"
+                  : "bg-[#131722] border-[#232A3B] text-slate-400 hover:text-white hover:border-[#0070F3]/50"
+              }`}
+            >
+              {m}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Control Bar: Sorting + Mobile Filter Trigger + Active Chips */}
       <div className="py-4 flex flex-wrap items-center justify-between gap-3">
         {/* Mobile filter button */}

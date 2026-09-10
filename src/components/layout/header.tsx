@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Logo } from "@/components/layout/logo";
 import { useCartStore } from "@/store/cart";
 import { storeConfig } from "@/config/store";
+import { INITIAL_PRODUCTS } from "@/data/initial-catalog";
+import { formatPrice } from "@/lib/formatters";
 import {
   Search,
   ShoppingBag,
@@ -17,6 +19,7 @@ import {
   Truck,
   MapPin,
   Sparkles,
+  ArrowRight,
 } from "lucide-react";
 
 export function Header() {
@@ -24,6 +27,7 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const toggleCart = useCartStore((s) => s.toggleCart);
@@ -45,6 +49,19 @@ export function Header() {
       setMobileMenuOpen(false);
     }
   };
+
+  const liveResults =
+    searchQuery.trim().length >= 2
+      ? INITIAL_PRODUCTS.filter((p) => {
+          const q = searchQuery.trim().toLowerCase();
+          return (
+            p.name.toLowerCase().includes(q) ||
+            p.brand.toLowerCase().includes(q) ||
+            p.compatibleModels.some((m) => m.toLowerCase().includes(q)) ||
+            p.sku.toLowerCase().includes(q)
+          );
+        }).slice(0, 4)
+      : [];
 
   const categories = [
     { name: "Чехлы", href: "/catalog?category=cases" },
@@ -156,19 +173,65 @@ export function Header() {
             </nav>
 
             {/* Center Desktop Search Input */}
-            <form
-              onSubmit={handleSearchSubmit}
-              className="hidden md:flex flex-1 max-w-xs xl:max-w-sm relative"
-            >
-              <input
-                type="text"
-                placeholder="Поиск чехлов, стекол, зарядок..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#131722] border border-[#232A3B] rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#0070F3] focus:ring-1 focus:ring-[#0070F3] transition-all"
-              />
-              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            </form>
+            <div className="hidden md:block flex-1 max-w-xs xl:max-w-sm relative">
+              <form onSubmit={handleSearchSubmit} className="relative w-full">
+                <input
+                  type="text"
+                  placeholder="Поиск чехлов, стекол, зарядок..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+                  className="w-full bg-[#131722] border border-[#232A3B] rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#0070F3] focus:ring-1 focus:ring-[#0070F3] transition-all"
+                />
+                <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              </form>
+
+              {/* Live Search Dropdown */}
+              {searchFocused && liveResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-[#131722] border border-[#232A3B] rounded-2xl shadow-2xl p-2 z-50 divide-y divide-[#232A3B]/50 animate-in fade-in duration-200">
+                  {liveResults.map((item) => (
+                    <Link
+                      key={item.id}
+                      href={`/product/${item.slug}`}
+                      onClick={() => {
+                        setSearchFocused(false);
+                        setSearchQuery("");
+                      }}
+                      className="flex items-center gap-3 p-2 hover:bg-[#1A2030] rounded-xl transition-colors group"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.images[0]}
+                        alt={item.name}
+                        className="w-10 h-10 object-cover rounded-lg bg-[#0B0D12] flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-white truncate group-hover:text-[#00E5FF] transition-colors">
+                          {item.name}
+                        </p>
+                        <p className="text-[10px] text-slate-400">
+                          {item.brand} • <span className="text-[#00E5FF] font-semibold">{formatPrice(item.price)}</span>
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                  <div className="pt-2 text-center">
+                    <button
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleSearchSubmit(e);
+                      }}
+                      className="text-[11px] text-[#0070F3] hover:text-[#00E5FF] font-semibold transition-colors flex items-center justify-center gap-1 mx-auto"
+                    >
+                      <span>Все результаты для «{searchQuery}»</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Right: Search Mobile Toggle & Cart Button */}
             <div className="flex items-center gap-2">
